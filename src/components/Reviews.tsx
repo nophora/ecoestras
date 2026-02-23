@@ -1,3 +1,7 @@
+'use client';
+import { Star, CheckCircle } from 'lucide-react';
+import Image from 'next/image';
+
 interface ReviewsProps {
     comments: {
         name: string;
@@ -11,28 +15,63 @@ export default function Reviews({ comments }: ReviewsProps) {
     if (!comments) return null;
 
     return (
-        <section className="py-16 bg-white overflow-hidden">
-            <div className="container mx-auto px-4">
-                <h2 className="text-3xl font-bold text-center mb-12">Customer Reviews</h2>
+        <section className="py-24 bg-gray-50/50">
+            <div className="container mx-auto px-4 max-w-7xl">
+                <div className="text-center mb-16">
+                    <h2 className="text-4xl font-black mb-4 font-heading tracking-tight text-gray-900 leading-tight">
+                        Real Results from Real People
+                    </h2>
+                    <p className="text-gray-500 font-medium max-w-2xl mx-auto text-lg leading-relaxed">
+                        Join over 50,000 satisfied customers who transformed their smiles with PAP PLUS.
+                    </p>
+                </div>
 
-                {/* Simple horizontal scroll for carousel effect */}
-                <div className="flex gap-6 overflow-x-auto pb-8 px-4 snap-x scrollbar-hide -mx-4 lg:mx-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {comments.map((review, idx) => (
                         <div
                             key={idx}
-                            className="flex-shrink-0 w-80 md:w-96 bg-gray-50 p-6 rounded-2xl border border-gray-100 snap-center shadow-sm"
+                            className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300"
                         >
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200">
-                                    <img src={review.picture} alt={review.name} className="object-cover w-full h-full" />
+                            <div className="flex gap-4 h-full">
+                                {/* Left Content: Info & Comment */}
+                                <div className="flex-1 flex flex-col">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <h4 className="font-bold text-gray-900 text-sm">{review.name}</h4>
+                                        <div className="flex items-center gap-1 text-[10px] text-gray-400 font-semibold italic">
+                                            <CheckCircle size={10} className="text-gray-900" />
+                                            <span>Verified</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="text-[10px] text-gray-400 font-medium mb-2">
+                                        {review.date}
+                                    </div>
+
+                                    <div className="flex gap-0.5 text-primary-600 mb-4">
+                                        {[...Array(5)].map((_, i) => (
+                                            <Star key={i} size={12} fill="currentColor" stroke="none" />
+                                        ))}
+                                    </div>
+
+                                    <div className="flex-1">
+                                        <p className="text-[13px] text-gray-800 font-bold leading-snug">
+                                            {review.comment}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h4 className="font-bold text-gray-900">{review.name}</h4>
-                                    <span className="text-xs text-gray-500">{review.date}</span>
+
+                                {/* Right Content: Testimony Image (Not profile) */}
+                                <div className="w-24 sm:w-28 h-36 sm:h-40 flex-shrink-0 relative rounded-xl overflow-hidden bg-gray-50 border border-gray-100">
+                                    <Image
+                                        src={review.picture}
+                                        alt={`Testimony from ${review.name}`}
+                                        fill
+                                        sizes="(max-width: 768px) 100px, 120px"
+                                        unoptimized
+                                        className="object-cover"
+                                    />
                                 </div>
-                                <div className="ml-auto text-yellow-400">★★★★★</div>
                             </div>
-                            <p className="text-gray-700 italic">"{review.comment}"</p>
                         </div>
                     ))}
                 </div>

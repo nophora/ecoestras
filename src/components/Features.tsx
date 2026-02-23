@@ -6,18 +6,33 @@ export default function Features({ specs }: FeaturesProps) {
     if (!specs) return null;
 
     return (
-        <section className="py-12 space-y-24 container mx-auto px-4">
+        <section className="py-24 space-y-32 container mx-auto px-4 max-w-6xl">
             {specs.map((spec, idx) => (
                 <div
                     key={idx}
-                    className={`flex flex-col ${idx % 2 === 1 ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-12 group`}
+                    className={`flex flex-col ${idx % 2 === 1 ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-16 lg:gap-24`}
                 >
-                    <div className="flex-1 w-full">
-                        <h3 className="text-2xl lg:text-3xl font-bold mb-4">{spec.title}</h3>
-                        <p className="text-lg text-gray-600 leading-relaxed">{spec.info}</p>
+                    <div className="flex-1 w-full text-center lg:text-left">
+                        <span className="text-primary-600 font-black text-xs uppercase tracking-[0.3em] mb-4 block">Process {idx + 1}</span>
+                        <h3 className="text-4xl lg:text-5xl font-black mb-6 font-heading tracking-tight text-gray-900 leading-[1.1]">
+                            {spec.title}
+                        </h3>
+                        <p className="text-xl text-gray-600 leading-relaxed font-medium mb-8">
+                            {spec.info}
+                        </p>
+                        <div className="w-16 h-1.5 bg-primary-100 rounded-full mx-auto lg:mx-0"></div>
                     </div>
-                    <div className="flex-1 w-full relative aspect-video rounded-3xl overflow-hidden shadow-2xl transform transition-transform group-hover:scale-[1.02]">
-                        <img src={spec.image} alt={spec.title} className="object-cover w-full h-full" />
+                    <div className="flex-1 w-full relative">
+                        {/* Background Accent blob */}
+                        <div className="absolute -inset-4 bg-primary-50 rounded-[3rem] -z-10 rotate-3 group-hover:rotate-1 transition-transform"></div>
+
+                        <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl transition-transform hover:scale-[1.02] duration-500">
+                            <img
+                                src={spec.image}
+                                alt={spec.title}
+                                className="object-contain w-full h-full p-4 bg-white"
+                            />
+                        </div>
                     </div>
                 </div>
             ))}

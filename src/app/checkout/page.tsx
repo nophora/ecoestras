@@ -19,6 +19,7 @@ export default function CheckoutPage() {
         phone: '',
         address: '',
         city: '',
+        suburb: '',
         postal_code: '',
     });
 
@@ -38,8 +39,8 @@ export default function CheckoutPage() {
         e.preventDefault();
 
         // Basic Validation
-        if (!formData.name || !formData.email || !formData.phone || !formData.address) {
-            setValidationError('Please fill in all required shipping fields');
+        if (!formData.name || !formData.email || !formData.phone || !formData.address || !formData.suburb) {
+            setValidationError('Please fill in all required shipping fields (including Suburb)');
 
             // Auto-scroll to error
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -199,7 +200,7 @@ export default function CheckoutPage() {
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div className="space-y-2">
                                         <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-4">City</label>
                                         <input
@@ -208,6 +209,16 @@ export default function CheckoutPage() {
                                             className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-primary-600 focus:outline-none transition-all font-bold text-gray-900"
                                             value={formData.city}
                                             onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-4">Suburb</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Sandton"
+                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-primary-600 focus:outline-none transition-all font-bold text-gray-900"
+                                            value={formData.suburb}
+                                            onChange={(e) => setFormData({ ...formData, suburb: e.target.value })}
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -283,8 +294,25 @@ export default function CheckoutPage() {
                                         <div>
                                             <h3 className="font-black text-gray-900 text-lg leading-tight mb-2">{cartItem.name}</h3>
                                             <div className="flex flex-wrap gap-2">
-                                                <span className="bg-white px-3 py-1 rounded-full border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-widest">{cartItem.variant.color}</span>
-                                                <span className="bg-white px-3 py-1 rounded-full border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-widest">{cartItem.variant.total_strips} Strips</span>
+                                                {Array.isArray(cartItem.variant) ? (
+                                                    cartItem.variant.map((attr: any, idx: number) => {
+                                                        const key = Object.keys(attr)[0];
+                                                        const value = attr[key];
+                                                        const displayValue = Array.isArray(value) ? value.join(', ') : String(value);
+                                                        return (
+                                                            <span key={idx} className="bg-white px-3 py-1 rounded-full border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                                                {key}: {displayValue}
+                                                            </span>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    // Fallback for old data or single object structure
+                                                    Object.entries(cartItem.variant || {}).map(([key, value], idx) => (
+                                                        <span key={idx} className="bg-white px-3 py-1 rounded-full border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                                            {key}: {String(value)}
+                                                        </span>
+                                                    ))
+                                                )}
                                             </div>
                                         </div>
                                     </div>

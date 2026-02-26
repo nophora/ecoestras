@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import Image from 'next/image';
+import { v4 as uuidv4 } from 'uuid';
 import { Star, Minus, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { trackCart, trackCheckout } from '@/lib/api';
 
 interface HeroProps {
     product: any;
@@ -10,18 +12,20 @@ interface HeroProps {
 
 export default function Hero({ product, onAddToCart }: HeroProps) {
     const [quantity, setQuantity] = useState(1);
+    const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
+    const [sessionId, setSessionId] = useState('');
+
+
     const router = useRouter();
+
+    const selectedVariant = product.variants?.[selectedVariantIndex] || [];
 
     // Selected product data structure for checkout
     const selected_product = [{
         name: product.product_name,
         product_icon: product.product_images[0],
         quantity: quantity,
-        variant: {
-            color: "purple violet",
-            pairs: 7,
-            total_strips: 14,
-        },
+        variant: selectedVariant, // Now an array of attributes
         pricing: {
             selling_price_zar: product.pricing.selling_price_zar,
             supplier_cost_zar: product.pricing.supplier_cost_zar,
@@ -33,12 +37,20 @@ export default function Hero({ product, onAddToCart }: HeroProps) {
         source_link: product.source_link,
     }]
 
-    const buyButton = () => {
+    const buyButton = async () => {
         const cart = [...selected_product]
+
+        //Genarate session_id
+        let sid = localStorage.getItem('session_id');
+        if (!sid) {
+            sid = uuidv4();
+            localStorage.setItem('session_id', sid)
+        }
+        setSessionId(sid);
 
         // This is the order object prepared for the checkout page
         const sendToCheckout = {
-            store_id: product.product_name,
+            store_id: product.store_id || 'pap-plus',
             customer: {
                 name: '',
                 email: '',
@@ -61,6 +73,17 @@ export default function Hero({ product, onAddToCart }: HeroProps) {
 
         // Save to localStorage so checkout page can pick it up
         localStorage.setItem('pending_order', JSON.stringify(sendToCheckout));
+
+        // Track analytics - explicitly wait to ensure they reach the server before navigation
+        try {
+            console.log('[Home] Sending trackCart...');
+            await trackCart(product.product_id, sessionId);
+            console.log('[Home] Sending trackCheckout...');
+            await trackCheckout(product.product_id, sessionId);
+        } catch (err) {
+            console.error('[Home] Tracking failed:', err);
+        }
+
 
         // Navigate to checkout
         router.push('/checkout');
@@ -112,6 +135,38 @@ export default function Hero({ product, onAddToCart }: HeroProps) {
                                 <span className="text-4xl lg:text-5xl text-gray-700/60 line-through font-black drop-shadow-[0_2px_10px_rgba(255,255,255,0.8)]">Was R{product.pricing.original_price_zar}</span>
                             )}
                         </div>
+
+                        {/* Variant Selector */}
+                        {product.variants && product.variants.length > 1 && (
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Select Option</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {product.variants.map((variant: any, idx: number) => {
+                                        // Try to find a 'name' or use index
+                                        const variantNameAttr = variant.find((a: any) => Object.keys(a)[0].toLowerCase() === 'name');
+                                        let displayName = 'Option ' + (idx + 1);
+
+                                        if (variantNameAttr) {
+                                            const val = Object.values(variantNameAttr)[0];
+                                            displayName = Array.isArray(val) ? val.join(', ') : String(val);
+                                        }
+
+                                        return (
+                                            <button
+                                                key={idx}
+                                                onClick={() => setSelectedVariantIndex(idx)}
+                                                className={`px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all border-2 ${selectedVariantIndex === idx
+                                                    ? 'border-primary-600 bg-primary-600 text-white shadow-lg'
+                                                    : 'border-gray-200 bg-white text-gray-500 hover:border-black'
+                                                    }`}
+                                            >
+                                                {displayName}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
 
                         <div className="flex flex-col sm:flex-row items-center gap-6">
                             {/* Quantity Selector */}

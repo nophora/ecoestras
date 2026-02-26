@@ -14,8 +14,10 @@ import ReviewSummary from '../components/ReviewSummary';
 import { getProduct, trackVisitor, trackCart, trackCheckout } from '../lib/api';
 import { v4 as uuidv4 } from 'uuid';
 import { Truck, ShieldCheck, RefreshCcw, Headset } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [sessionId, setSessionId] = useState('');
@@ -37,11 +39,40 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (product) {
-      trackCart(product.product_id, sessionId);
-      alert('Secure Checkout initializing...');
-      trackCheckout(product.product_id, sessionId);
+      // Create pending order for checkout page
+      const pendingOrder = {
+        product_id: product.product_id,
+        store_id: product.store_id || 'pap-plus',
+        cart_bucket: [{
+          product_id: product.product_id,
+          name: product.product_name,
+          product_icon: product.hero_banner,
+          quantity: 1,
+          variant: [], // Default to no variants for simplicity
+          pricing: {
+            customer_totalprice: product.pricing.selling_price_zar,
+            supplier_totalprice: product.pricing.supplier_cost_zar
+          }
+        }]
+      };
+
+      console.log(`[Home] Initiating checkout for product: ${product.product_id}`);
+      localStorage.setItem('pending_order', JSON.stringify(pendingOrder));
+
+      // Track analytics - explicitly wait to ensure they reach the server before navigation
+      try {
+        console.log('[Home] Sending trackCart...');
+        await trackCart(product.product_id, sessionId);
+        console.log('[Home] Sending trackCheckout...');
+        await trackCheckout(product.product_id, sessionId);
+      } catch (err) {
+        console.error('[Home] Tracking failed:', err);
+      }
+
+      // Redirect to checkout
+      router.push('/checkout');
     }
   };
 

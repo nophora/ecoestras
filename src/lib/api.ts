@@ -171,3 +171,19 @@ export async function createProduct(productData: any) {
     if (!res.ok) throw new Error('Failed to create product');
     return await res.json();
 }
+
+export async function getHomepage() {
+    const res = await fetch(`${API_URL}/homepage`, { cache: 'no-store' });
+    if (!res.ok) throw new Error('Failed to fetch homepage settings');
+    return await res.json();
+}
+
+export async function updateHomepage(data: any) {
+    const res = await authFetch(`${API_URL}/homepage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error('Failed to update homepage settings');
+    return await res.json();
+}

@@ -42,7 +42,7 @@ import {
     ShieldCheck,
     Loader2
 } from 'lucide-react';
-import { getAssistanceRequests, markAssistanceDone, getOrders, markOrderFulfilled, markOrderPaid, deleteOrder, getAllProducts, toggleProductPause, deleteProduct, createProduct, getMe, logout } from '@/lib/api';
+import { getAssistanceRequests, markAssistanceDone, getOrders, markOrderFulfilled, markOrderPaid, deleteOrder, getAllProducts, toggleProductPause, deleteProduct, createProduct, getMe, logout, getHomepage, updateHomepage } from '@/lib/api';
 
 type Order = {
     _id: string;
@@ -131,6 +131,11 @@ export default function DashboardPage() {
         orderId: null,
         productId: null
     });
+    const [notification, setNotification] = useState<{ 
+        message: string; 
+        type: 'success' | 'error' | 'info';
+    } | null>(null);
+
     const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
     const [newProductForm, setNewProductForm] = useState({
         product_id: '',
@@ -149,6 +154,23 @@ export default function DashboardPage() {
         description_specifications: [{ title: '', info: '', image: '' }],
         comments: [] as any[], // Start empty, we'll add the first one in a useEffect or logic
     });
+
+    const [isEditHomeModalOpen, setIsEditHomeModalOpen] = useState(false);
+    const [homeForm, setHomeForm] = useState({
+        hero: { product_id: '', banner: '', title1: '', title2: '', title3: '' },
+        middlesection: { product_id: '', icon: '', title1: '', title2: '' },
+        downleft: { product_id: '', icon: '', title1: '', title2: '' },
+        downmiddle: { product_id: '', icon: '', title1: '', title2: '' },
+        downright: { product_id: '', icon: '', title1: '', title2: '' }
+    });
+
+    // Auto-dismiss notification
+    useEffect(() => {
+        if (notification) {
+            const timer = setTimeout(() => setNotification(null), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [notification]);
 
     const [selectedSessionProduct, setSelectedSessionProduct] = useState<Product | null>(null);
     const [activeGraphMetric, setActiveGraphMetric] = useState<'visitor' | 'carter' | 'checkout'>('visitor');
@@ -527,24 +549,24 @@ export default function DashboardPage() {
                                     </div>
                                 );
                             })}
+                            
+                            {/* Tooltip - Moved inside the same relative container for perfect coordinate alignment */}
+                            {hoveredFinancialPoint && hoveredFinancialPoint.type === type && (
+                                <div
+                                    className="absolute z-10 bg-gray-900/95 backdrop-blur-md text-white px-3 py-1.5 rounded-xl shadow-2xl pointer-events-none flex flex-col items-center animate-in zoom-in-95 duration-200"
+                                    style={{
+                                        left: `${hoveredFinancialPoint.x}%`,
+                                        top: `${hoveredFinancialPoint.y}%`,
+                                        transform: 'translate(-50%, -120%)'
+                                    }}
+                                >
+                                    <span className="text-[10px] font-black">R{Math.round(hoveredFinancialPoint.value).toLocaleString()}</span>
+                                    <span className="text-[7px] font-bold text-gray-400 uppercase tracking-tighter">{hoveredFinancialPoint.label}</span>
+                                    <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45" />
+                                </div>
+                            )}
                         </div>
                     </div>
-
-                    {/* Tooltip */}
-                    {hoveredFinancialPoint && hoveredFinancialPoint.type === type && (
-                        <div
-                            className="absolute z-10 bg-gray-900/95 backdrop-blur-md text-white px-3 py-1.5 rounded-xl shadow-2xl pointer-events-none flex flex-col items-center animate-in zoom-in-95 duration-200"
-                            style={{
-                                left: `${hoveredFinancialPoint.x}%`,
-                                top: `${hoveredFinancialPoint.y}%`,
-                                transform: 'translate(-50%, -120%)'
-                            }}
-                        >
-                            <span className="text-[10px] font-black">R{Math.round(hoveredFinancialPoint.value).toLocaleString()}</span>
-                            <span className="text-[7px] font-bold text-gray-400 uppercase tracking-tighter">{hoveredFinancialPoint.label}</span>
-                            <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45" />
-                        </div>
-                    )}
                 </div>
             </div>
         );
@@ -1436,12 +1458,31 @@ Total Amount: R${order.total_amount}
                                 <h2 className="text-sm font-black uppercase tracking-[0.3em] text-gray-900 font-heading">
                                     Inventory Management
                                 </h2>
-                                <button
-                                    onClick={() => setIsAddProductModalOpen(true)}
-                                    className="bg-black text-white px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 transition-all active:scale-95 flex items-center gap-2"
-                                >
-                                    <Plus size={14} /> Add Product
-                                </button>
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                const data = await getHomepage();
+                                                if (data && data.hero) {
+                                                    setHomeForm(data);
+                                                }
+                                                setIsEditHomeModalOpen(true);
+                                            } catch (err) {
+                                                console.error(err);
+                                                setIsEditHomeModalOpen(true); // Open even if empty
+                                            }
+                                        }}
+                                        className="bg-white border-2 border-black text-black px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg hover:bg-gray-50 transition-all active:scale-95 flex items-center gap-2"
+                                    >
+                                        <Settings size={14} /> Edit Homepage
+                                    </button>
+                                    <button
+                                        onClick={() => setIsAddProductModalOpen(true)}
+                                        className="bg-black text-white px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 transition-all active:scale-95 flex items-center gap-2"
+                                    >
+                                        <Plus size={14} /> Add Product
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start">
@@ -1739,24 +1780,24 @@ Total Amount: R${order.total_amount}
                                                                     </div>
                                                                 );
                                                             })}
+
+                                                            {/* Tooltip - Moved inside the same relative container for perfect coordinate alignment */}
+                                                            {hoveredPoint && (
+                                                                <div
+                                                                    className="absolute z-10 bg-gray-900 text-white px-2 py-1 rounded-lg shadow-xl pointer-events-none flex flex-col items-center"
+                                                                    style={{
+                                                                        left: `${hoveredPoint.x}%`,
+                                                                        top: `${hoveredPoint.y}%`,
+                                                                        transform: 'translate(-50%, -120%)'
+                                                                    }}
+                                                                >
+                                                                    <span className="text-[10px] font-black">{hoveredPoint.value}</span>
+                                                                    <span className="text-[6px] uppercase opacity-50">{hoveredPoint.label}</span>
+                                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-gray-900" />
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
-
-                                                    {/* Tooltip */}
-                                                    {hoveredPoint && (
-                                                        <div
-                                                            className="absolute z-10 bg-gray-900 text-white px-2 py-1 rounded-lg shadow-xl pointer-events-none flex flex-col items-center"
-                                                            style={{
-                                                                left: `${hoveredPoint.x}%`,
-                                                                top: `${hoveredPoint.y}%`,
-                                                                transform: 'translate(-50%, -120%)'
-                                                            }}
-                                                        >
-                                                            <span className="text-[10px] font-black">{hoveredPoint.value}</span>
-                                                            <span className="text-[6px] uppercase opacity-50">{hoveredPoint.label}</span>
-                                                            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-gray-900" />
-                                                        </div>
-                                                    )}
                                                 </>
                                             );
                                         })()}
@@ -2190,6 +2231,130 @@ Total Amount: R${order.total_amount}
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Homepage Modal */}
+            {isEditHomeModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-3xl p-10 max-w-4xl w-full shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-300 overflow-y-auto max-h-[90vh]">
+                        <div className="flex justify-between items-center mb-8">
+                            <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tighter font-heading">
+                                Modify Landing Page
+                            </h3>
+                            <button onClick={() => setIsEditHomeModalOpen(false)} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            try {
+                                await updateHomepage(homeForm);
+                                setIsEditHomeModalOpen(false);
+                                setNotification({ 
+                                    message: 'Homepage updated successfully! Your changes are now live.', 
+                                    type: 'success' 
+                                });
+                            } catch (err) {
+                                console.error(err);
+                                setNotification({ 
+                                    message: 'Failed to update homepage. Please try again.', 
+                                    type: 'error' 
+                                });
+                            }
+                        }} className="space-y-10">
+                            
+                            {/* Hero Section */}
+                            <div className="space-y-6">
+                                <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest border-b pb-2">Hero Section</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Product ID Reference</label>
+                                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold" value={homeForm.hero.product_id} onChange={e => setHomeForm({ ...homeForm, hero: { ...homeForm.hero, product_id: e.target.value } })} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Banner Image URL</label>
+                                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold" value={homeForm.hero.banner} onChange={e => setHomeForm({ ...homeForm, hero: { ...homeForm.hero, banner: e.target.value } })} />
+                                    </div>
+                                    <div className="col-span-full space-y-4">
+                                        <input placeholder="Title 1" className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold" value={homeForm.hero.title1} onChange={e => setHomeForm({ ...homeForm, hero: { ...homeForm.hero, title1: e.target.value } })} />
+                                        <input placeholder="Title 2" className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold" value={homeForm.hero.title2} onChange={e => setHomeForm({ ...homeForm, hero: { ...homeForm.hero, title2: e.target.value } })} />
+                                        <textarea placeholder="Title 3 (Description)" className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold min-h-[80px]" value={homeForm.hero.title3} onChange={e => setHomeForm({ ...homeForm, hero: { ...homeForm.hero, title3: e.target.value } })} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Grid Sections */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                {[
+                                    { key: 'middlesection', label: 'Middle Highlight' },
+                                    { key: 'downleft', label: 'Bottom Left' },
+                                    { key: 'downmiddle', label: 'Bottom Middle' },
+                                    { key: 'downright', label: 'Bottom Right' }
+                                ].map((section) => (
+                                    <div key={section.key} className="space-y-6 p-6 bg-gray-50 rounded-3xl border border-gray-100">
+                                        <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">{section.label}</h4>
+                                        <div className="space-y-4">
+                                            <input placeholder="Product ID" className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:border-black transition-all text-[10px] font-bold" value={(homeForm as any)[section.key].product_id} onChange={e => setHomeForm({ ...homeForm, [section.key]: { ...(homeForm as any)[section.key], product_id: e.target.value } })} />
+                                            <input placeholder="Icon URL" className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:border-black transition-all text-[10px] font-bold" value={(homeForm as any)[section.key].icon} onChange={e => setHomeForm({ ...homeForm, [section.key]: { ...(homeForm as any)[section.key], icon: e.target.value } })} />
+                                            <input placeholder="Title 1" className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:border-black transition-all text-[10px] font-bold" value={(homeForm as any)[section.key].title1} onChange={e => setHomeForm({ ...homeForm, [section.key]: { ...(homeForm as any)[section.key], title1: e.target.value } })} />
+                                            <input placeholder="Title 2" className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:border-black transition-all text-[10px] font-bold" value={(homeForm as any)[section.key].title2} onChange={e => setHomeForm({ ...homeForm, [section.key]: { ...(homeForm as any)[section.key], title2: e.target.value } })} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <button type="submit" className="w-full bg-black text-white py-6 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-[1.02] transition-all active:scale-95">
+                                Update Home
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Professional Toast Notification */}
+            {notification && (
+                <div className="fixed bottom-10 right-10 z-[100] animate-in slide-in-from-right-10 fade-in duration-500">
+                    <div className={`
+                        relative overflow-hidden
+                        backdrop-blur-xl border border-white/10
+                        rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]
+                        px-8 py-5 min-w-[320px]
+                        flex items-center gap-4
+                        ${notification.type === 'success' ? 'bg-black/90' : 'bg-red-950/90'}
+                    `}>
+                        {/* Glow effect */}
+                        <div className={`absolute -left-20 -top-20 w-40 h-40 rounded-full blur-[80px] opacity-20 ${notification.type === 'success' ? 'bg-green-400' : 'bg-red-500'}`} />
+                        
+                        <div className={`
+                            w-10 h-10 rounded-2xl flex items-center justify-center shrink-0
+                            ${notification.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}
+                        `}>
+                            {notification.type === 'success' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
+                        </div>
+                        
+                        <div className="flex flex-col gap-0.5">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
+                                {notification.type === 'success' ? 'System Notification' : 'Error Detected'}
+                            </h4>
+                            <p className="text-sm font-bold text-white tracking-tight">
+                                {notification.message}
+                            </p>
+                        </div>
+
+                        <button 
+                            onClick={() => setNotification(null)}
+                            className="ml-auto p-2 rounded-xl hover:bg-white/5 text-white/20 hover:text-white transition-all"
+                        >
+                            <X size={16} />
+                        </button>
+
+                        {/* Progress Bar */}
+                        <div className="absolute bottom-0 left-0 h-[3px] bg-white/10 w-full">
+                            <div className={`h-full animate-[progress_5s_linear_forwards] ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
+                        </div>
                     </div>
                 </div>
             )}

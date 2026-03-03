@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getProduct, getHomepage, trackVisitor, trackCart, trackCheckout } from '../lib/api';
-import { Menu, Search, ShoppingBag, ArrowRight, Heart } from 'lucide-react';
+import { Menu, Search, ShoppingBag, ArrowRight, Heart, Star } from 'lucide-react';
 
 export default function Home() {
     const router = useRouter();
@@ -20,6 +20,27 @@ export default function Home() {
         { id: '6', name: 'Wireless Charger Pad', desc: '15W Fast Charging for iPhone and Galaxy', price: 299.00, discount: 12, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
         { id: '7', name: 'Mini Humidifier', desc: 'USB Powered with Night Light Mode', price: 189.50, discount: 25, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
         { id: '8', name: 'Ergonomic Mouse', desc: 'Vertical Wireless Mouse with DPI Control', price: 420.00, discount: 18, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
+    ]);
+
+    const [testimonials] = useState([
+        {
+            name: 'Charlie M.',
+            location: 'Johannesburg',
+            content: 'What a high-quality item. Purchased my U1 Gloves and waited about a week or two to receive. Definitely worth the wait. What a high-quality Gloves.',
+            stars: 5
+        },
+        {
+            name: 'Jason K.',
+            location: 'Cape Town',
+            content: 'Excellent trousers, the fit is perfect and they actually feel like trainers and look formal. The best combination!',
+            stars: 5
+        },
+        {
+            name: 'Lisa Y.',
+            location: 'Pretoria',
+            content: 'I am so impressed with this product. I will definitely be getting some more. I was quite apprehensive in the beginning cos in the past I’ve spent...',
+            stars: 5
+        }
     ]);
 
     useEffect(() => {
@@ -143,7 +164,7 @@ export default function Home() {
                         </p>
 
                         <Link
-                            href={`/product?id=${displayHome.hero.product_id}`}
+                            href={`/product`}
                             className="inline-flex items-center gap-3 px-10 py-4 bg-white text-black text-[11px] font-black uppercase tracking-[0.2em] rounded-full shadow-2xl hover:scale-110 hover:bg-gray-100 transition-all active:scale-95 group"
                         >
                             Shop Now
@@ -158,7 +179,7 @@ export default function Home() {
                 Budget Friendly Shopping
             </div>
 
-            <section className="bg-white px-2 md:px-10 pb-20 rounded-t-[3rem] relative z-30 -mt-8">
+            <section className="bg-white px-2 md:px-10 pb-4 rounded-t-[3rem] relative z-30 -mt-8">
                 <div className="max-w-7xl mx-auto pt-10">
                     <div className="flex items-center justify-between mb-8 px-4">
                         <div>
@@ -207,12 +228,11 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Middle Section & Grid */}
-            <section className="bg-white py-24 px-10">
-                <div className="max-w-7xl mx-auto space-y-24">
-
+            {/* Middle Section & Highlight */}
+            <section className="bg-white pt-8 pb-12 px-10">
+                <div className="max-w-7xl mx-auto space-y-16">
                     {/* Section Heading */}
-                    <div className="text-center mb-10">
+                    <div className="text-center mb-6">
                         <h2 className="text-3xl md:text-4xl font-bold font-script text-black leading-none uppercase">
                             NEW <span className="text-gray-400">&</span> Trending
                         </h2>
@@ -243,10 +263,71 @@ export default function Home() {
                             </Link>
                         </div>
                     )}
+                </div>
+            </section>
 
+            {/* Weekly Deals Section - Matching Budget Friendly Shopping Style */}
+            <div className="bg-black text-white px-10 pt-8 pb-12 font-black uppercase tracking-[0.2em] text-[10px] relative z-20">
+                Weekly Deals
+            </div>
 
+            <section className="bg-white px-2 md:px-10 pb-20 rounded-t-[3rem] relative z-30 -mt-8">
+                <div className="max-w-7xl mx-auto pt-10 space-y-24">
+                    {/* Duplicated Carousel */}
+                    <div>
+                        <div className="flex items-center justify-between mb-8 px-4">
+                            <div>
+                                <h2 className="text-sm font-black italic uppercase tracking-widest text-gray-900 flex items-center gap-2">
+                                    SUPER <span className="text-gray-400 not-italic">OFFER</span>
+                                </h2>
+                            </div>
+                            <button className="p-2 rounded-full hover:bg-gray-100 transition-all text-gray-300">
+                                <ArrowRight size={20} />
+                            </button>
+                        </div>
 
+                        <div className="flex overflow-x-auto gap-4 px-4 no-scrollbar pb-8 scroll-smooth">
+                            {mockProducts.map((p) => (
+                                <div key={p.id} className="min-w-[180px] md:min-w-[220px] group cursor-pointer">
+                                    <Link href={`/product?id=${displayHome.hero.product_id}`}>
+                                        <div className="aspect-square rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden relative mb-4">
+                                            <img
+                                                src={p.img}
+                                                alt={p.name}
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                            />
+                                            <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-sm">
+                                                <Heart size={14} />
+                                            </button>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h3 className="text-[11px] font-black uppercase text-gray-900 truncate">
+                                                {p.name}
+                                            </h3>
+                                            <p className="text-[9px] font-bold text-gray-400 line-clamp-2 leading-tight h-6">
+                                                {p.desc}
+                                            </p>
+                                            <div className="flex items-center gap-2 pt-2">
+                                                <p className="text-sm font-black text-gray-900 italic">R{p.price.toFixed(2)}</p>
+                                                <div className="px-2 py-0.5 rounded-full border border-gray-200 text-[8px] font-black text-gray-500">
+                                                    -{p.discount}%
+                                                </div>
+                                            </div>
+                                            <p className="text-[8px] font-bold text-gray-300 uppercase italic">Estimated</p>
+                                        </div>
+                                    </Link>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
+                    {/* Middle Section & Highlight */}
+                    {/* Section Heading */}
+                    <div className="text-center mb-6">
+                        <h2 className="text-3xl md:text-4xl font-bold font-script text-black leading-none uppercase">
+                            Trending <span className="text-gray-400">THIS</span> Week
+                        </h2>
+                    </div>
 
                     {/* Bottom Grid Section */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -289,8 +370,110 @@ export default function Home() {
                             );
                         })}
                     </div>
+
+                    {/* From Our Customers Section */}
+                    <div className="pt-20 pb-10">
+                        <div className="text-center mb-12">
+                            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-gray-900">
+                                FROM OUR CUSTOMERS
+                            </h2>
+                        </div>
+
+                        <div className="flex overflow-x-auto gap-6 no-scrollbar pb-8 scroll-smooth px-4">
+                            {testimonials.map((t, i) => (
+                                <div key={i} className="min-w-[300px] md:min-w-[400px] flex-1 bg-white border border-gray-100 rounded-[2.5rem] p-10 flex flex-col items-center text-center space-y-6 shadow-2xl hover:shadow-[0_30px_60px_rgba(0,0,0,0.12)] transition-shadow">
+                                    <div className="flex gap-1">
+                                        {[...Array(t.stars)].map((_, i) => (
+                                            <Star key={i} size={16} fill="black" strokeWidth={0} />
+                                        ))}
+                                    </div>
+                                    <p className="text-gray-500 text-sm leading-relaxed font-medium">
+                                        "{t.content}"
+                                    </p>
+                                    <div className="space-y-1">
+                                        <h4 className="font-black text-gray-900 uppercase tracking-widest text-[11px]">{t.name}</h4>
+                                        <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">{t.location}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </section>
+
+            {/* Footer Section */}
+            <footer className="bg-black text-white">
+                {/* Subscription Area */}
+                <div className="max-w-7xl mx-auto px-10 py-24 text-center border-b border-white/5">
+                    <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter mb-4">
+                        Subscribe to our emails
+                    </h2>
+                    <p className="text-gray-400 text-sm md:text-base mb-12 max-w-lg mx-auto leading-relaxed">
+                        Be the first to know about new collections and exclusive offers.
+                    </p>
+                    <div className="max-w-md mx-auto relative group">
+                        <input
+                            type="email"
+                            placeholder="Email"
+                            className="w-full bg-transparent border border-white/30 rounded-full py-4 px-8 pr-16 text-sm focus:outline-none focus:border-white transition-colors"
+                        />
+                        <button className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:translate-x-1 transition-transform">
+                            <ArrowRight size={20} strokeWidth={2} />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Payment & Support Area */}
+                <div className="max-w-7xl mx-auto px-10 py-16">
+                    <div className="flex flex-col items-center space-y-8">
+                        {/* Payment Icons */}
+                        <div className="space-y-4 text-center">
+                            <div className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                                We accept <ArrowRight size={10} className="-rotate-90" />
+                            </div>
+                            <div className="flex flex-wrap justify-center gap-4 transition-all duration-500">
+                                {[
+                                    { name: 'AMEX', color: 'bg-[#016FD0]' },
+                                    { name: 'Apple Pay', color: 'bg-white text-black' },
+                                    { name: 'Mastercard', color: 'bg-[#EB001B]' },
+                                    { name: 'PayPal', color: 'bg-[#003087]' },
+                                    { name: 'Visa', color: 'bg-[#1A1F71]' },
+                                    { name: 'Klarna', color: 'bg-[#FFB3C7] text-black' }
+                                ].map((p, i) => (
+                                    <div key={i} className={`${p.color} px-3 py-1.5 rounded-md text-[9px] font-black uppercase tracking-tighter flex items-center justify-center min-w-[50px] h-8`}>
+                                        {p.name}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+
+
+                        {/* Legal & Footer Links */}
+                        <div className="w-full pt-16 flex flex-col md:flex-row items-center justify-between gap-8 border-t border-white/5">
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                &copy; 2026 ECOESTRAS
+                            </p>
+                            <div className="flex flex-wrap justify-center gap-x-8 gap-y-4">
+                                {[
+                                    { label: 'Terms Of Service', href: '/terms-of-service' },
+                                    { label: 'Privacy Policy', href: '/privacy-policy' },
+                                    { label: 'Refund Policy', href: '/refund-policy' },
+                                    { label: 'Assistance', href: '/assistance' }
+                                ].map((link, i) => (
+                                    <Link
+                                        key={i}
+                                        href={link.href}
+                                        className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-white transition-colors"
+                                    >
+                                        {link.label}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
         </main>
     );
 }

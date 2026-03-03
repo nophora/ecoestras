@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronLeft, Lock, Truck, ShieldCheck, CreditCard } from 'lucide-react';
+import { ChevronLeft, Lock, Truck, ShieldCheck, CreditCard, ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -22,6 +22,7 @@ export default function CheckoutPage() {
         suburb: '',
         postal_code: '',
     });
+    const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
 
     useEffect(() => {
         const pending = localStorage.getItem('pending_order');
@@ -33,7 +34,9 @@ export default function CheckoutPage() {
         setLoading(false);
     }, [router]);
 
-    const cartItem = order?.cart_bucket?.[0];
+    const cartItems = order?.cart_bucket || [];
+    const totalItems = cartItems.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+    const subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.pricing?.customer_totalprice || 0), 0);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -116,7 +119,7 @@ export default function CheckoutPage() {
                     <h1 className="text-4xl font-black text-gray-900 font-heading tracking-tight">Order Placed!</h1>
                     <p className="text-xl text-gray-500 font-medium">Thank you for your purchase. We've received your order and are preparing it for shipment from South Africa.</p>
                     <div className="pt-8">
-                        <Link href="/" className="bg-primary-600 hover:bg-primary-700 text-white font-black py-4 px-12 rounded-full shadow-lg transition-all inline-block uppercase tracking-widest text-sm">
+                        <Link href="/" className="bg-black hover:bg-gray-800 text-white font-black py-4 px-12 rounded-full shadow-lg transition-all inline-block uppercase tracking-widest text-sm">
                             Continue Shopping
                         </Link>
                     </div>
@@ -126,13 +129,13 @@ export default function CheckoutPage() {
     }
 
     return (
-        <main className="min-h-screen bg-slate-50 font-sans selection:bg-primary-100 selection:text-primary-900">
+        <main className="min-h-screen bg-white font-sans selection:bg-black selection:text-white uppercase tracking-tight">
             {/* Simple Header */}
-            <div className="bg-white border-b border-gray-100 sticky top-0 z-50">
+            <div className="bg-black text-white border-b border-white/5 sticky top-0 z-50">
                 <div className="container mx-auto px-4 h-20 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2 text-primary-900 font-black text-xl tracking-tighter group font-heading">
+                    <Link href="/" className="flex items-center gap-2 text-white font-black text-xl tracking-tighter group font-heading">
                         <ChevronLeft className="group-hover:-translate-x-1 transition-transform" />
-                        PAP PLUS
+                        EcoEstras
                     </Link>
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400">
                         <Lock size={14} className="text-green-500" />
@@ -148,7 +151,7 @@ export default function CheckoutPage() {
                     <div className="lg:col-span-7 space-y-8">
                         <section className="bg-white rounded-[2.5rem] shadow-soft border border-gray-100 p-8 md:p-12">
                             <div className="flex items-center gap-4 mb-8">
-                                <div className="w-12 h-12 rounded-2xl bg-primary-50 flex items-center justify-center text-primary-600">
+                                <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center text-white">
                                     <Truck size={24} />
                                 </div>
                                 <h2 className="text-2xl font-black text-gray-900 font-heading tracking-tight">Shipping Details</h2>
@@ -161,7 +164,7 @@ export default function CheckoutPage() {
                                         <input
                                             type="text"
                                             placeholder="e.g. John Doe"
-                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-primary-600 focus:outline-none transition-all font-bold text-gray-900"
+                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         />
@@ -171,7 +174,7 @@ export default function CheckoutPage() {
                                         <input
                                             type="email"
                                             placeholder="john@example.com"
-                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-primary-600 focus:outline-none transition-all font-bold text-gray-900"
+                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
                                             value={formData.email}
                                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                         />
@@ -183,7 +186,7 @@ export default function CheckoutPage() {
                                     <input
                                         type="tel"
                                         placeholder="012 345 6789"
-                                        className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-primary-600 focus:outline-none transition-all font-bold text-gray-900"
+                                        className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                     />
@@ -194,7 +197,7 @@ export default function CheckoutPage() {
                                     <input
                                         type="text"
                                         placeholder="123 Luxury Lane, Sandton"
-                                        className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-primary-600 focus:outline-none transition-all font-bold text-gray-900"
+                                        className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
                                         value={formData.address}
                                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                     />
@@ -206,7 +209,7 @@ export default function CheckoutPage() {
                                         <input
                                             type="text"
                                             placeholder="Johannesburg"
-                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-primary-600 focus:outline-none transition-all font-bold text-gray-900"
+                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
                                             value={formData.city}
                                             onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                                         />
@@ -216,7 +219,7 @@ export default function CheckoutPage() {
                                         <input
                                             type="text"
                                             placeholder="Sandton"
-                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-primary-600 focus:outline-none transition-all font-bold text-gray-900"
+                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
                                             value={formData.suburb}
                                             onChange={(e) => setFormData({ ...formData, suburb: e.target.value })}
                                         />
@@ -226,7 +229,7 @@ export default function CheckoutPage() {
                                         <input
                                             type="text"
                                             placeholder="2000"
-                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-primary-600 focus:outline-none transition-all font-bold text-gray-900"
+                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
                                             value={formData.postal_code}
                                             onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })}
                                         />
@@ -243,7 +246,7 @@ export default function CheckoutPage() {
                                 <h2 className="text-2xl font-black text-gray-900 font-heading tracking-tight">Payment Method</h2>
                             </div>
 
-                            <div className="p-6 rounded-3xl border-2 border-primary-600 bg-primary-50/50 flex items-center justify-between">
+                            <div className="p-6 rounded-3xl border-2 border-black bg-gray-50 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="bg-white p-1 rounded-xl shadow-sm flex items-center justify-center min-w-[120px] min-h-[48px]">
                                         <svg width="110" height="32" viewBox="0 0 110 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="PayFast">
@@ -260,12 +263,12 @@ export default function CheckoutPage() {
                                         <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Instant EFT, Card, Masterpass</p>
                                     </div>
                                 </div>
-                                <div className="w-6 h-6 rounded-full border-4 border-primary-600 bg-white shadow-inner"></div>
+                                <div className="w-6 h-6 rounded-full border-4 border-black bg-white shadow-inner"></div>
                             </div>
 
                             <p className="mt-8 text-sm text-gray-500 font-medium leading-relaxed">
                                 After clicking “Complete Order”, you will be redirected to PayFast to complete your purchase securely.
-                                <span className="text-primary-600 font-black"> Free shipping applied to all South African orders.</span>
+                                <span className="text-black font-black"> Free shipping applied to all South African orders.</span>
                             </p>
                         </section>
                     </div>
@@ -274,62 +277,87 @@ export default function CheckoutPage() {
                     <div className="lg:col-span-5">
                         <div className="sticky top-32 space-y-8">
                             <section className="bg-white rounded-[2.5rem] shadow-card border border-gray-100 overflow-hidden">
-                                <div className="p-8 border-b border-gray-50 bg-slate-50/50">
-                                    <h2 className="text-xl font-black text-gray-900 font-heading tracking-tight">Order Summary</h2>
+                                <div
+                                    onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                                    className="p-8 border-b border-gray-50 bg-slate-50/50 flex items-center justify-between cursor-pointer group"
+                                >
+                                    <div>
+                                        <h2 className="text-xl font-black text-gray-900 font-heading tracking-tight">Order Summary</h2>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                                            {totalItems} {totalItems === 1 ? 'Item' : 'Items'} • Click to {isSummaryExpanded ? 'hide' : 'show'}
+                                        </p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 group-hover:text-black transition-colors">
+                                        {isSummaryExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                    </div>
                                 </div>
 
                                 <div className="p-8 space-y-8">
-                                    <div className="flex items-center gap-6">
-                                        <div className="relative w-24 h-24 bg-slate-50 rounded-3xl overflow-hidden border border-gray-100 flex-shrink-0">
-                                            <Image
-                                                src={cartItem.product_icon}
-                                                alt={cartItem.name}
-                                                fill
-                                                className="object-cover"
-                                            />
-                                            <div className="absolute top-1 right-1 bg-primary-600 text-white text-[10px] font-black w-6 h-6 flex items-center justify-center rounded-full border-2 border-white">
-                                                {cartItem.quantity}
+                                    <div className={`space-y-6 overflow-hidden transition-all duration-500 ${isSummaryExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                        {cartItems.map((item: any, idx: number) => (
+                                            <div key={idx} className="flex items-center gap-6 pb-6 border-b border-gray-50 last:border-0 last:pb-0">
+                                                <div className="relative w-20 h-20 bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 flex-shrink-0">
+                                                    <Image
+                                                        src={item.product_icon}
+                                                        alt={item.name}
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                    <div className="absolute top-1 right-1 bg-black text-white text-[9px] font-black w-5 h-5 flex items-center justify-center rounded-full border border-white">
+                                                        {item.quantity}
+                                                    </div>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="font-black text-gray-900 text-sm leading-tight mb-1 truncate">{item.name}</h3>
+                                                    <div className="flex flex-wrap gap-1 mb-2">
+                                                        {item.variant?.map((attr: any, vIdx: number) => {
+                                                            const key = Object.keys(attr)[0];
+                                                            return (
+                                                                <span key={vIdx} className="text-[8px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-2 py-0.5 rounded">
+                                                                    {key}: {attr[key]}
+                                                                </span>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    <p className="text-xs font-black text-black">R{item.pricing?.customer_totalprice.toFixed(2)}</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div>
-                                            <h3 className="font-black text-gray-900 text-lg leading-tight mb-2">{cartItem.name}</h3>
-                                            <div className="flex flex-wrap gap-2">
-                                                {Array.isArray(cartItem.variant) ? (
-                                                    cartItem.variant.map((attr: any, idx: number) => {
-                                                        const key = Object.keys(attr)[0];
-                                                        const value = attr[key];
-                                                        const displayValue = Array.isArray(value) ? value.join(', ') : String(value);
-                                                        return (
-                                                            <span key={idx} className="bg-white px-3 py-1 rounded-full border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                                                                {key}: {displayValue}
-                                                            </span>
-                                                        );
-                                                    })
-                                                ) : (
-                                                    // Fallback for old data or single object structure
-                                                    Object.entries(cartItem.variant || {}).map(([key, value], idx) => (
-                                                        <span key={idx} className="bg-white px-3 py-1 rounded-full border border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                                                            {key}: {String(value)}
-                                                        </span>
-                                                    ))
-                                                )}
-                                            </div>
-                                        </div>
+                                        ))}
                                     </div>
 
-                                    <div className="space-y-4 pt-8 border-t border-gray-50">
-                                        <div className="flex justify-between text-gray-500 font-medium">
-                                            <span>Subtotal</span>
-                                            <span className="text-gray-900 font-bold">R{cartItem.pricing.customer_totalprice}</span>
+                                    {!isSummaryExpanded && cartItems.length > 0 && (
+                                        <div className="flex items-center gap-4 py-2">
+                                            <div className="flex -space-x-4 overflow-hidden">
+                                                {cartItems.slice(0, 3).map((item: any, idx: number) => (
+                                                    <div key={idx} className="inline-block h-12 w-12 rounded-xl ring-4 ring-white bg-gray-50 border border-gray-100 relative overflow-hidden">
+                                                        <Image src={item.product_icon} alt={item.name} fill className="object-cover" />
+                                                    </div>
+                                                ))}
+                                                {cartItems.length > 3 && (
+                                                    <div className="inline-block h-12 w-12 rounded-xl ring-4 ring-white bg-black flex items-center justify-center text-[10px] font-black text-white">
+                                                        +{cartItems.length - 3}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                {cartItems.length} {cartItems.length === 1 ? 'Item' : 'Items'} in cart
+                                            </p>
                                         </div>
-                                        <div className="flex justify-between text-gray-500 font-medium">
+                                    )}
+
+                                    <div className="space-y-4 pt-8 border-t border-gray-50">
+                                        <div className="flex justify-between text-gray-500 font-medium text-xs uppercase tracking-widest">
+                                            <span>Subtotal</span>
+                                            <span className="text-gray-900 font-bold">R{subtotal.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-500 font-medium text-xs uppercase tracking-widest">
                                             <span>Shipping (South Africa)</span>
-                                            <span className="text-green-600 font-bold uppercase tracking-widest text-xs">Free</span>
+                                            <span className="text-green-600 font-bold tracking-widest">Free</span>
                                         </div>
                                         <div className="pt-4 border-t border-gray-100 flex justify-between items-end">
                                             <div>
-                                                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total to pay</p>
-                                                <p className="text-4xl font-black text-gray-900">R{cartItem.pricing.customer_totalprice}</p>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total to pay</p>
+                                                <p className="text-4xl font-black text-gray-900">R{subtotal.toFixed(2)}</p>
                                             </div>
                                             <div className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-1">
                                                 Zero Extas
@@ -351,7 +379,7 @@ export default function CheckoutPage() {
                                     <button
                                         onClick={handleSubmit}
                                         disabled={isSubmitting}
-                                        className="w-full bg-primary-600 hover:bg-primary-700 text-white font-black py-6 rounded-full shadow-2xl hover:shadow-primary-600/30 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm disabled:opacity-50"
+                                        className="w-full bg-black hover:bg-gray-800 text-white font-black py-6 rounded-full shadow-2xl hover:shadow-black/30 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm disabled:opacity-50"
                                     >
                                         {isSubmitting ? 'Processing...' : 'Complete Order'}
                                         <ChevronLeft className="rotate-180" size={18} />
@@ -359,12 +387,12 @@ export default function CheckoutPage() {
 
                                     <div className="mt-8 grid grid-cols-2 gap-4">
                                         <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                            <ShieldCheck size={14} className="text-primary-600" />
-                                            Enamel Safe
+                                            <ShieldCheck size={14} className="text-black" />
+                                            Secured Results
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                            <ShieldCheck size={14} className="text-primary-600" />
-                                            Peroxide Free
+                                            <ShieldCheck size={14} className="text-black" />
+                                            Secured Formula
                                         </div>
                                     </div>
                                 </div>
@@ -377,7 +405,7 @@ export default function CheckoutPage() {
             {/* Simple Footer */}
             <footer className="py-12 border-t border-gray-100 text-center">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em]">
-                    &copy; 2026 PAP PLUS South Africa. All Rights Reserved.
+                    &copy; 2026 EcoEstras South Africa. All Rights Reserved.
                 </p>
             </footer>
         </main>

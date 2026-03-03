@@ -12,7 +12,7 @@ export default function ReviewSummary() {
     return (
         <div className="bg-white p-8 rounded-3xl shadow-card border border-gray-100 max-w-lg mx-auto mb-16">
             <div className="flex flex-col items-center mb-8">
-                <div className="bg-primary-50 text-primary-600 p-2 rounded-xl mb-2">
+                <div className="bg-gray-50 text-black p-2 rounded-xl mb-2">
                     <Star size={32} fill="currentColor" />
                 </div>
                 <div className="text-5xl font-black text-gray-900 mb-1">4.9</div>
@@ -24,11 +24,11 @@ export default function ReviewSummary() {
                     <div key={stat.stars} className="flex items-center gap-4">
                         <div className="flex items-center gap-1 w-20 flex-shrink-0">
                             <span className="font-bold text-gray-900">{stat.stars}</span>
-                            <Star size={14} className="text-primary-600" fill="currentColor" />
+                            <Star size={14} className="text-black" fill="currentColor" />
                         </div>
-                        <div className="flex-1 h-3 bg-primary-50 rounded-full overflow-hidden">
+                        <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-primary-600 rounded-full transition-all duration-1000"
+                                className="h-full bg-black rounded-full transition-all duration-1000"
                                 style={{ width: `${stat.percentage}%` }}
                             ></div>
                         </div>

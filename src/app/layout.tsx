@@ -7,7 +7,7 @@ const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 const caveat = Caveat({ subsets: ['latin'], variable: '--font-script', weight: '700' });
 
 export const metadata: Metadata = {
-  title: 'PAP PLUS | Professional Teeth Whitening',
+  title: 'EcoEstras | Professional Teeth Whitening',
   description: 'Premium peroxide-free teeth whitening strips.',
 };
 

@@ -5,13 +5,13 @@ import Link from 'next/link';
 
 export default function PrivacyPolicy() {
     return (
-        <main className="min-h-screen bg-slate-50 font-sans selection:bg-primary-100 selection:text-primary-900">
+        <main className="min-h-screen bg-white font-sans selection:bg-black selection:text-white uppercase tracking-tight">
             {/* Header / Nav */}
-            <div className="bg-white border-b border-gray-100 sticky top-0 z-50">
-                <div className="container mx-auto px-4 h-20 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2 text-primary-900 font-black text-xl tracking-tighter group font-heading">
+            <div className="bg-black text-white border-b border-white/5 sticky top-0 z-50">
+                <div className="container mx-auto px-10 h-20 flex items-center justify-between">
+                    <Link href="/" className="flex items-center gap-2 text-white font-black text-xl tracking-tighter group font-heading">
                         <ChevronLeft className="group-hover:-translate-x-1 transition-transform" />
-                        PAP PLUS
+                        EcoEstras
                     </Link>
                     <div className="hidden md:flex items-center gap-6 text-xs font-black uppercase tracking-widest text-gray-400">
                         <span>Legal Center</span>
@@ -23,17 +23,17 @@ export default function PrivacyPolicy() {
 
             {/* Hero Section */}
             <section className="bg-white pt-20 pb-32 border-b border-gray-100 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary-50 to-transparent pointer-events-none"></div>
-                <div className="container mx-auto px-4 max-w-4xl relative z-10">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-600 rounded-full text-xs font-bold uppercase tracking-widest mb-8">
-                        <Shield size={14} /> Correct as of February 2026
+                <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-gray-50 to-transparent pointer-events-none"></div>
+                <div className="container mx-auto px-10 max-w-4xl relative z-10">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest mb-8">
+                        <Shield size={14} /> Correct as of March 2026
                     </div>
-                    <h1 className="text-5xl md:text-6xl font-black text-gray-900 mb-8 font-heading tracking-tight leading-tight">
+                    <h1 className="text-5xl md:text-7xl font-black text-black mb-8 font-heading tracking-tighter leading-none uppercase">
                         Our Commitment <br />
-                        <span className="text-primary-600">To Your Privacy.</span>
+                        <span className="text-gray-400">To Your Privacy.</span>
                     </h1>
                     <p className="text-xl text-gray-500 font-medium leading-relaxed max-w-2xl">
-                        At PAP PLUS, your trust is our most valuable ingredient. We are committed to transparency in how we handle your information as you shop with us.
+                        At EcoEstras, your trust is our most valuable ingredient. We are committed to transparency in how we handle your information as you shop with us.
                     </p>
                 </div>
             </section>
@@ -44,9 +44,9 @@ export default function PrivacyPolicy() {
                     <div className="bg-white rounded-[3rem] shadow-soft border border-gray-100 p-8 md:p-16">
 
                         <div className="prose prose-slate max-w-none">
-                            <h2 className="text-3xl font-black text-gray-900 mb-6">Privacy Policy</h2>
+                            <h2 className="text-3xl font-black text-black mb-6 uppercase tracking-tighter">Privacy Policy</h2>
                             <p className="text-gray-600 leading-relaxed mb-12">
-                                This Privacy Policy describes how PAP PLUS (the “Site” or “we”) collects, uses, and discloses your Personal Information when you visit or make a purchase from the Site.
+                                This Privacy Policy describes how EcoEstras (the “Site” or “we”) collects, uses, and discloses your Personal Information when you visit or make a purchase from the Site.
                             </p>
 
                             <hr className="border-gray-100 mb-12" />
@@ -55,18 +55,18 @@ export default function PrivacyPolicy() {
                                 {/* Section: Collecting Personal Information */}
                                 <div>
                                     <div className="flex items-center gap-4 mb-6">
-                                        <div className="w-12 h-12 rounded-2xl bg-primary-50 flex items-center justify-center text-primary-600">
+                                        <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center text-white">
                                             <FileText size={24} />
                                         </div>
-                                        <h3 className="text-2xl font-black text-gray-900">Collecting Personal Information</h3>
+                                        <h3 className="text-2xl font-black text-black uppercase tracking-tighter">Collecting Personal Information</h3>
                                     </div>
                                     <p className="text-gray-600 leading-relaxed mb-6">
                                         When you visit the Site, we collect certain information about your device, your interaction with the Site, and information necessary to process your purchases. We refer to any information that can uniquely identify an individual as “Personal Information”. See the list below for more information about what Personal Information we collect and why.
                                     </p>
 
-                                    <div className="space-y-8 bg-slate-50 p-8 rounded-3xl border border-gray-100">
+                                    <div className="space-y-8 bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
                                         <div>
-                                            <h4 className="font-black text-primary-900 uppercase tracking-widest text-xs mb-3">Device Information</h4>
+                                            <h4 className="font-black text-black uppercase tracking-widest text-[10px] mb-3">Device Information</h4>
                                             <p className="text-sm text-gray-600 leading-relaxed">
                                                 <strong>Examples:</strong> Version of web browser, IP address, time zone, cookie information, search terms, and how you interact with the Site.<br />
                                                 <strong>Purpose:</strong> To load the Site accurately for you, and to perform analytics on Site usage to optimize our Site.<br />
@@ -74,7 +74,7 @@ export default function PrivacyPolicy() {
                                             </p>
                                         </div>
                                         <div>
-                                            <h4 className="font-black text-primary-900 uppercase tracking-widest text-xs mb-3">Order Information</h4>
+                                            <h4 className="font-black text-black uppercase tracking-widest text-[10px] mb-3">Order Information</h4>
                                             <p className="text-sm text-gray-600 leading-relaxed">
                                                 <strong>Examples:</strong> Name, billing address, shipping address, payment information, email address, and phone number.<br />
                                                 <strong>Purpose:</strong> To provide products or services to you to fulfill our contract, to process your payment information, arrange for shipping, and provide you with invoices and confirmations.<br />
@@ -129,10 +129,10 @@ export default function PrivacyPolicy() {
                                         For more information about our privacy practices, if you have questions, or if you would like to make a complaint, please contact us by e-mail at:
                                     </p>
                                     <a
-                                        href="mailto:support@papplus.co.za"
-                                        className="text-2xl font-black text-primary-600 hover:text-primary-700 transition-colors"
+                                        href="mailto:support@ecoestras.co.za"
+                                        className="text-2xl font-black text-black hover:text-gray-600 transition-colors uppercase tracking-tight"
                                     >
-                                        support@papplus.co.za
+                                        support@ecoestras.co.za
                                     </a>
                                 </div>
                             </div>
@@ -143,11 +143,27 @@ export default function PrivacyPolicy() {
             </section>
 
             {/* Footer */}
-            <footer className="bg-primary-900 text-white/50 py-16">
+            <footer className="bg-black text-white py-16">
                 <div className="container mx-auto px-4 text-center">
-                    <h2 className="text-2xl font-black mb-8 text-white">PAP PLUS</h2>
+                    <h2 className="text-2xl font-black mb-8 text-white uppercase tracking-tighter">EcoEstras</h2>
+                    <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8">
+                        {[
+                            { label: 'Terms Of Service', href: '/terms-of-service' },
+                            { label: 'Privacy Policy', href: '/privacy-policy' },
+                            { label: 'Refund Policy', href: '/refund-policy' },
+                            { label: 'Assistance', href: '/assistance' }
+                        ].map((link, i) => (
+                            <Link
+                                key={i}
+                                href={link.href}
+                                className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-white transition-colors"
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
+                    </div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-40">
-                        &copy; 2026 PAP PLUS South Africa. All Rights Reserved.
+                        &copy; 2026 EcoEstras South Africa. All Rights Reserved.
                     </p>
                 </div>
             </footer>

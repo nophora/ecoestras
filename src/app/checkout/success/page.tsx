@@ -18,11 +18,11 @@ function SuccessContent() {
     }, [searchParams]);
 
     return (
-        <main className="min-h-screen bg-white font-sans selection:bg-primary-100 selection:text-primary-900">
+        <main className="min-h-screen bg-white font-sans selection:bg-black selection:text-white uppercase tracking-tight">
             {/* Nav */}
             <nav className="container mx-auto px-4 h-20 flex items-center justify-between border-b border-gray-50">
-                <Link href="/" className="flex items-center gap-2 text-primary-900 font-black text-xl tracking-tighter group font-heading">
-                    PAP PLUS
+                <Link href="/" className="flex items-center gap-2 text-black font-black text-xl tracking-tighter group font-heading">
+                    EcoEstras
                 </Link>
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-green-600 bg-green-50 px-4 py-2 rounded-full">
                     <ShieldCheck size={14} />
@@ -32,11 +32,11 @@ function SuccessContent() {
 
             <div className="container mx-auto px-4 py-16 md:py-24 max-w-4xl text-center">
                 <div className="mb-12 relative inline-block">
-                    <div className="w-32 h-32 bg-primary-50 rounded-[3rem] flex items-center justify-center text-primary-600 animate-in zoom-in duration-700">
+                    <div className="w-32 h-32 bg-gray-50 rounded-[3rem] flex items-center justify-center text-black animate-in zoom-in duration-700">
                         <CheckCircle2 size={64} strokeWidth={1.5} />
                     </div>
                     <div className="absolute -bottom-2 -right-2 bg-white p-2 rounded-2xl shadow-xl border border-gray-50 animate-bounce duration-[2000ms]">
-                        <Package className="text-primary-600" size={24} />
+                        <Package className="text-black" size={24} />
                     </div>
                 </div>
 
@@ -53,15 +53,15 @@ function SuccessContent() {
                     <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-gray-100 text-left">
                         <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Tracking Status</p>
                         <h3 className="text-xl font-black text-gray-900 mb-4">Awaiting Fulfillment</h3>
-                        <div className="flex items-center gap-2 text-primary-600 font-bold text-sm">
+                        <div className="flex items-center gap-2 text-black font-bold text-sm">
                             <Truck size={18} />
                             <span>Ships within 24-48 hours</span>
                         </div>
                     </div>
 
-                    <div className="bg-primary-600 p-8 rounded-[2.5rem] shadow-xl shadow-primary-600/20 text-left text-white">
+                    <div className="bg-black p-8 rounded-[2.5rem] shadow-xl shadow-black/20 text-left text-white">
                         <p className="text-xs font-black text-white/60 uppercase tracking-widest mb-2">Your Tracking ID</p>
-                        <h3 className="text-3xl font-black mb-4">{trackId || 'Processing...'}</h3>
+                        <h3 className="text-3xl font-black mb-4 text-white">{trackId || 'Processing...'}</h3>
                         <p className="text-sm font-medium text-white/80">Keep this ID for your records. We'll email you once your package is on the way.</p>
                     </div>
                 </div>
@@ -76,7 +76,7 @@ function SuccessContent() {
                         <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                     </Link>
                     <div className="block pt-4">
-                        <Link href="/assistance" className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-primary-600 transition-colors">
+                        <Link href="/assistance" className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-black transition-colors">
                             Need Help? Contact Support
                         </Link>
                     </div>
@@ -89,15 +89,15 @@ function SuccessContent() {
                     <div className="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
                         <div className="flex items-center gap-2 font-black text-sm tracking-tighter uppercase grayscale">
                             <ShieldCheck size={20} />
-                            Enamel Safe
+                            Secured Results
                         </div>
                         <div className="flex items-center gap-2 font-black text-sm tracking-tighter uppercase grayscale">
                             <ShieldCheck size={20} />
-                            Peroxide Free
+                            Secured Formula
                         </div>
                         <div className="flex items-center gap-2 font-black text-sm tracking-tighter uppercase grayscale">
                             <ShieldCheck size={20} />
-                            Vegan Friendly
+                            Secured Quality
                         </div>
                     </div>
                 </div>

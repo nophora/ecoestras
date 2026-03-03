@@ -47,12 +47,12 @@ export default function AssistancePage() {
     };
 
     return (
-        <main className="min-h-screen bg-white font-sans selection:bg-primary-100 selection:text-primary-900">
+        <main className="min-h-screen bg-white font-sans selection:bg-black selection:text-white uppercase tracking-tight">
             {/* Nav */}
             <nav className="container mx-auto px-4 h-20 flex items-center justify-between border-b border-gray-50">
-                <Link href="/" className="flex items-center gap-2 text-primary-900 font-black text-xl tracking-tighter group font-heading">
+                <Link href="/" className="flex items-center gap-2 text-black font-black text-xl tracking-tighter group font-heading">
                     <ChevronLeft className="group-hover:-translate-x-1 transition-transform" />
-                    PAP PLUS
+                    EcoEstras
                 </Link>
             </nav>
 
@@ -105,7 +105,7 @@ export default function AssistancePage() {
                                 placeholder="Email"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full px-8 py-5 rounded-full border-2 border-gray-900 bg-white placeholder:text-gray-400 font-bold focus:outline-none focus:ring-4 focus:ring-primary-100 transition-all"
+                                className="w-full px-8 py-5 rounded-full border-2 border-gray-900 bg-white placeholder:text-gray-400 font-bold focus:outline-none focus:ring-4 focus:ring-black/5 transition-all"
                             />
                         </div>
 
@@ -116,7 +116,7 @@ export default function AssistancePage() {
                                 placeholder="Number"
                                 value={formData.number}
                                 onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-                                className="w-full px-8 py-5 rounded-full border-2 border-gray-900 bg-white placeholder:text-gray-400 font-bold focus:outline-none focus:ring-4 focus:ring-primary-100 transition-all"
+                                className="w-full px-8 py-5 rounded-full border-2 border-gray-900 bg-white placeholder:text-gray-400 font-bold focus:outline-none focus:ring-4 focus:ring-black/5 transition-all"
                             />
                         </div>
 
@@ -128,7 +128,7 @@ export default function AssistancePage() {
                                     placeholder="Track Id"
                                     value={formData.trackId}
                                     onChange={(e) => setFormData({ ...formData, trackId: e.target.value })}
-                                    className="w-full px-8 py-5 rounded-full border-2 border-gray-900 bg-white placeholder:text-gray-400 font-bold focus:outline-none focus:ring-4 focus:ring-primary-100 transition-all"
+                                    className="w-full px-8 py-5 rounded-full border-2 border-gray-900 bg-white placeholder:text-gray-400 font-bold focus:outline-none focus:ring-4 focus:ring-black/5 transition-all"
                                 />
                             </div>
                         )}
@@ -140,7 +140,7 @@ export default function AssistancePage() {
                                 placeholder="Your Message"
                                 value={formData.message}
                                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                                className="w-full px-8 py-6 rounded-[2.5rem] border-2 border-gray-900 bg-white placeholder:text-gray-400 font-bold focus:outline-none focus:ring-4 focus:ring-primary-100 transition-all resize-none"
+                                className="w-full px-8 py-6 rounded-[2.5rem] border-2 border-gray-900 bg-white placeholder:text-gray-400 font-bold focus:outline-none focus:ring-4 focus:ring-black/5 transition-all resize-none"
                             ></textarea>
                         </div>
 
@@ -159,10 +159,35 @@ export default function AssistancePage() {
                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Overview</h3>
                     <p className="text-gray-500 leading-relaxed font-medium">
                         We're always here to listen! If there's something on your mind, feel free to send us a quick message.
-                        If you have a problem with your PAP PLUS product, please don't hesitate to reach out and a member of our support staff will be in touch.
+                        If you have a problem with your EcoEstras product, please don't hesitate to reach out and a member of our support staff will be in touch.
                     </p>
                 </div>
             </div>
+            {/* Footer */}
+            <footer className="bg-black text-white py-16">
+                <div className="container mx-auto px-4 text-center">
+                    <h2 className="text-2xl font-black mb-8 text-white uppercase tracking-tighter">EcoEstras</h2>
+                    <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8">
+                        {[
+                            { label: 'Terms Of Service', href: '/terms-of-service' },
+                            { label: 'Privacy Policy', href: '/privacy-policy' },
+                            { label: 'Refund Policy', href: '/refund-policy' },
+                            { label: 'Assistance', href: '/assistance' }
+                        ].map((link, i) => (
+                            <Link
+                                key={i}
+                                href={link.href}
+                                className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-white transition-colors"
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
+                    </div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-40">
+                        &copy; 2026 EcoEstras South Africa. All Rights Reserved.
+                    </p>
+                </div>
+            </footer>
         </main>
     );
 }

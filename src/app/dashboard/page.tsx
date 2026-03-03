@@ -131,8 +131,8 @@ export default function DashboardPage() {
         orderId: null,
         productId: null
     });
-    const [notification, setNotification] = useState<{ 
-        message: string; 
+    const [notification, setNotification] = useState<{
+        message: string;
         type: 'success' | 'error' | 'info';
     } | null>(null);
 
@@ -549,7 +549,7 @@ export default function DashboardPage() {
                                     </div>
                                 );
                             })}
-                            
+
                             {/* Tooltip - Moved inside the same relative container for perfect coordinate alignment */}
                             {hoveredFinancialPoint && hoveredFinancialPoint.type === type && (
                                 <div
@@ -1310,7 +1310,7 @@ Total Amount: R${order.total_amount}
                                                     {order.status.fulfillment}
                                                 </span>
                                                 <span className="px-3 py-1 rounded-full text-[8px] font-black bg-gray-100 text-gray-400 border border-gray-200 uppercase tracking-widest">
-                                                    {order.store_id || 'pap-plus'}
+                                                    {order.store_id || 'ecoestras'}
                                                 </span>
                                             </div>
                                         </div>
@@ -1338,7 +1338,7 @@ Total Amount: R${order.total_amount}
                                                         </div>
                                                         <div className="bg-white p-2 rounded-lg border border-gray-100">
                                                             <p className="text-gray-400 mb-0.5 text-[7px]">Selling Price</p>
-                                                            <p className="text-primary-600">R{item.pricing?.selling_price_zar}</p>
+                                                            <p className="text-black">R{item.pricing?.selling_price_zar}</p>
                                                         </div>
                                                         <div className="bg-white p-2 rounded-lg border border-gray-100">
                                                             <p className="text-gray-400 mb-0.5 text-[7px]">Vendor Total</p>
@@ -1354,7 +1354,7 @@ Total Amount: R${order.total_amount}
                                                         href={item.source_link}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="block w-full text-center py-2 bg-white border border-dashed border-gray-300 rounded-xl text-[8px] font-black text-gray-400 hover:text-primary-600 hover:border-primary-600 transition-all uppercase tracking-widest"
+                                                        className="block w-full text-center py-2 bg-white border border-dashed border-gray-300 rounded-xl text-[8px] font-black text-gray-400 hover:text-black hover:border-black transition-all uppercase tracking-widest"
                                                     >
                                                         View Source Link
                                                     </a>
@@ -1918,7 +1918,7 @@ Total Amount: R${order.total_amount}
                                     <input
                                         required
                                         type="text"
-                                        placeholder="e.g. pap-plus"
+                                        placeholder="e.g. ecoestras"
                                         className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold"
                                         value={newProductForm.store_id}
                                         onChange={e => setNewProductForm({ ...newProductForm, store_id: e.target.value })}
@@ -2253,19 +2253,19 @@ Total Amount: R${order.total_amount}
                             try {
                                 await updateHomepage(homeForm);
                                 setIsEditHomeModalOpen(false);
-                                setNotification({ 
-                                    message: 'Homepage updated successfully! Your changes are now live.', 
-                                    type: 'success' 
+                                setNotification({
+                                    message: 'Homepage updated successfully! Your changes are now live.',
+                                    type: 'success'
                                 });
                             } catch (err) {
                                 console.error(err);
-                                setNotification({ 
-                                    message: 'Failed to update homepage. Please try again.', 
-                                    type: 'error' 
+                                setNotification({
+                                    message: 'Failed to update homepage. Please try again.',
+                                    type: 'error'
                                 });
                             }
                         }} className="space-y-10">
-                            
+
                             {/* Hero Section */}
                             <div className="space-y-6">
                                 <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest border-b pb-2">Hero Section</h4>
@@ -2327,14 +2327,14 @@ Total Amount: R${order.total_amount}
                     `}>
                         {/* Glow effect */}
                         <div className={`absolute -left-20 -top-20 w-40 h-40 rounded-full blur-[80px] opacity-20 ${notification.type === 'success' ? 'bg-green-400' : 'bg-red-500'}`} />
-                        
+
                         <div className={`
                             w-10 h-10 rounded-2xl flex items-center justify-center shrink-0
                             ${notification.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}
                         `}>
                             {notification.type === 'success' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
                         </div>
-                        
+
                         <div className="flex flex-col gap-0.5">
                             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
                                 {notification.type === 'success' ? 'System Notification' : 'Error Detected'}
@@ -2344,7 +2344,7 @@ Total Amount: R${order.total_amount}
                             </p>
                         </div>
 
-                        <button 
+                        <button
                             onClick={() => setNotification(null)}
                             className="ml-auto p-2 rounded-xl hover:bg-white/5 text-white/20 hover:text-white transition-all"
                         >

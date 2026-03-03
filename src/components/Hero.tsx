@@ -50,7 +50,7 @@ export default function Hero({ product, onAddToCart }: HeroProps) {
 
         // This is the order object prepared for the checkout page
         const sendToCheckout = {
-            store_id: product.store_id || 'pap-plus',
+            store_id: product.store_id || 'ecoestras',
             customer: {
                 name: '',
                 email: '',
@@ -98,7 +98,7 @@ export default function Hero({ product, onAddToCart }: HeroProps) {
             <div className="absolute inset-0 z-0">
                 <Image
                     src={product.hero_banner || product.product_images[0]}
-                    alt="Premium PAP PLUS Whitening"
+                    alt="Premium EcoEstras Whitening"
                     fill
                     sizes="100vw"
                     unoptimized
@@ -118,7 +118,7 @@ export default function Hero({ product, onAddToCart }: HeroProps) {
                     </div>
 
                     <h1 className="text-5xl lg:text-7xl font-bold mb-6 text-gray-900 leading-[1.1] font-heading tracking-tight">
-                        Premium PAP+ <br />
+                        Premium EcoEstras <br />
                         <span className="text-primary-600">Whitening.</span> <br />
                         <span className="text-gray-900">Zero Sensitivity.</span>
                     </h1>

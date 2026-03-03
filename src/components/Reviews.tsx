@@ -21,8 +21,8 @@ export default function Reviews({ comments }: ReviewsProps) {
                     <h2 className="text-4xl font-black mb-4 font-heading tracking-tight text-gray-900 leading-tight">
                         Real Results from Real People
                     </h2>
-                    <p className="text-gray-500 font-medium max-w-2xl mx-auto text-lg leading-relaxed">
-                        Join over 50,000 satisfied customers who transformed their smiles with PAP PLUS.
+                    <p className="text-gray-500 font-medium max-w-2xl mx-auto text-lg leading-relaxed text-center">
+                        Join over 50,000 satisfied customers who transformed their lives with EcoEstras.
                     </p>
                 </div>
 
@@ -47,7 +47,7 @@ export default function Reviews({ comments }: ReviewsProps) {
                                         {review.date}
                                     </div>
 
-                                    <div className="flex gap-0.5 text-primary-600 mb-4">
+                                    <div className="flex gap-0.5 text-black mb-4">
                                         {[...Array(5)].map((_, i) => (
                                             <Star key={i} size={12} fill="currentColor" stroke="none" />
                                         ))}

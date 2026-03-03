@@ -14,7 +14,7 @@ export default function FAQ({ faqs }: FAQProps) {
   return (
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4 max-w-3xl">
-        <h2 className="text-3xl font-bold text-center mb-10">Frequently Asked Questions</h2>
+        <h2 className="text-3xl font-black text-center mb-10 uppercase tracking-tight text-black">Frequently Asked Questions</h2>
         <div className="space-y-4">
           {faqs.map((faq, idx) => (
             <div key={idx} className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -23,7 +23,7 @@ export default function FAQ({ faqs }: FAQProps) {
                 onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
               >
                 <span className="font-medium text-lg">{faq.question}</span>
-                {openIndex === idx ? <ChevronUp className="text-violet-600" /> : <ChevronDown className="text-gray-400" />}
+                {openIndex === idx ? <ChevronUp className="text-black" /> : <ChevronDown className="text-gray-400" />}
               </button>
               {openIndex === idx && (
                 <div className="px-6 pb-6 text-gray-600 leading-relaxed border-t border-gray-100 pt-4">

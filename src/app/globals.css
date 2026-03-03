@@ -41,13 +41,13 @@
   h4,
   h5,
   h6 {
-    @apply font-heading text-primary-900;
+    @apply font-heading text-black;
   }
 }
 
 @layer utilities {
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-indigo-600;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600;
   }
 }
 

@@ -125,6 +125,7 @@ export default function DashboardPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
+    const [expandedProductOrders, setExpandedProductOrders] = useState<Set<string>>(new Set());
     const [searchQuery, setSearchQuery] = useState('');
     const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; orderId: string | null; productId: string | null }>({
         isOpen: false,
@@ -624,6 +625,18 @@ export default function DashboardPage() {
 
     const toggleOrderExpansion = (orderId: string) => {
         setExpandedOrders(prev => {
+            const next = new Set(prev);
+            if (next.has(orderId)) {
+                next.delete(orderId);
+            } else {
+                next.add(orderId);
+            }
+            return next;
+        });
+    };
+
+    const toggleProductOrderExpansion = (orderId: string) => {
+        setExpandedProductOrders(prev => {
             const next = new Set(prev);
             if (next.has(orderId)) {
                 next.delete(orderId);
@@ -1316,50 +1329,81 @@ Total Amount: R${order.total_amount}
                                         </div>
 
                                         {/* Products Array */}
-                                        <div className="space-y-4 mb-8">
-                                            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2">Products</h4>
-                                            {order.cart_bucket?.map((item, idx) => (
-                                                <div key={idx} className="bg-gray-50 rounded-2xl p-4 space-y-3">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-200 flex-shrink-0 bg-white relative">
-                                                            <img src={item.product_icon} alt="" className="w-full h-full object-cover" />
-                                                            <div className="absolute top-0 right-0 bg-black text-white text-[6px] w-3 h-3 flex items-center justify-center rounded-bl-lg font-black">{item.quantity}</div>
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <p className="text-[10px] font-black text-gray-900 truncate uppercase">{item.name}</p>
-                                                            <p className="text-[8px] font-bold text-gray-500 uppercase tracking-wider">{item.variant?.color} • {item.variant?.total_strips} Strips</p>
-                                                        </div>
-                                                    </div>
+                                        <div className="mb-8">
+                                            <button
+                                                onClick={() => toggleProductOrderExpansion(order._id)}
+                                                className="w-full flex items-center justify-between text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2 mb-4 hover:text-gray-900 transition-colors"
+                                            >
+                                                <span>Products ({order.cart_bucket?.length || 0})</span>
+                                                {expandedProductOrders.has(order._id) ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                            </button>
 
-                                                    <div className="grid grid-cols-2 gap-2 text-[8px] font-black uppercase tracking-tighter">
-                                                        <div className="bg-white p-2 rounded-lg border border-gray-100">
-                                                            <p className="text-gray-400 mb-0.5 text-[7px]">Vendor Price</p>
-                                                            <p className="text-gray-900">R{item.pricing?.supplier_cost_zar}</p>
-                                                        </div>
-                                                        <div className="bg-white p-2 rounded-lg border border-gray-100">
-                                                            <p className="text-gray-400 mb-0.5 text-[7px]">Selling Price</p>
-                                                            <p className="text-black">R{item.pricing?.selling_price_zar}</p>
-                                                        </div>
-                                                        <div className="bg-white p-2 rounded-lg border border-gray-100">
-                                                            <p className="text-gray-400 mb-0.5 text-[7px]">Vendor Total</p>
-                                                            <p className="text-gray-900">R{item.pricing?.supplier_totalprice}</p>
-                                                        </div>
-                                                        <div className="bg-white p-2 rounded-lg border border-gray-100">
-                                                            <p className="text-gray-400 mb-0.5 text-[7px]">Customer Total</p>
-                                                            <p className="text-green-600">R{item.pricing?.customer_totalprice}</p>
-                                                        </div>
+                                            {!expandedProductOrders.has(order._id) && order.cart_bucket?.length > 0 && (
+                                                <div className="flex items-center gap-4 py-2">
+                                                    <div className="flex -space-x-4 overflow-hidden">
+                                                        {order.cart_bucket.slice(0, 3).map((item: any, idx: number) => (
+                                                            <div key={idx} className="inline-block h-10 w-10 rounded-xl ring-4 ring-white bg-gray-50 border border-gray-100 relative overflow-hidden">
+                                                                <img src={item.product_icon} alt="" className="w-full h-full object-cover" />
+                                                            </div>
+                                                        ))}
+                                                        {order.cart_bucket.length > 3 && (
+                                                            <div className="inline-block h-10 w-10 rounded-xl ring-4 ring-white bg-black flex items-center justify-center text-[10px] font-black text-white">
+                                                                +{order.cart_bucket.length - 3}
+                                                            </div>
+                                                        )}
                                                     </div>
-
-                                                    <a
-                                                        href={item.source_link}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="block w-full text-center py-2 bg-white border border-dashed border-gray-300 rounded-xl text-[8px] font-black text-gray-400 hover:text-black hover:border-black transition-all uppercase tracking-widest"
-                                                    >
-                                                        View Source Link
-                                                    </a>
+                                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                        {order.cart_bucket.length} Items
+                                                    </p>
                                                 </div>
-                                            ))}
+                                            )}
+
+                                            {expandedProductOrders.has(order._id) && (
+                                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                    {order.cart_bucket?.map((item, idx) => (
+                                                        <div key={idx} className="bg-gray-50 rounded-2xl p-4 space-y-3">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-200 flex-shrink-0 bg-white relative">
+                                                                    <img src={item.product_icon} alt="" className="w-full h-full object-cover" />
+                                                                    <div className="absolute top-0 right-0 bg-black text-white text-[6px] w-3 h-3 flex items-center justify-center rounded-bl-lg font-black">{item.quantity}</div>
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <p className="text-[10px] font-black text-gray-900 truncate uppercase">{item.name}</p>
+                                                                    <p className="text-[8px] font-bold text-gray-500 uppercase tracking-wider">{item.variant?.color} • {item.variant?.total_strips} Strips</p>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="grid grid-cols-2 gap-2 text-[8px] font-black uppercase tracking-tighter">
+                                                                <div className="bg-white p-2 rounded-lg border border-gray-100">
+                                                                    <p className="text-gray-400 mb-0.5 text-[7px]">Vendor Price</p>
+                                                                    <p className="text-gray-900">R{item.pricing?.supplier_cost_zar}</p>
+                                                                </div>
+                                                                <div className="bg-white p-2 rounded-lg border border-gray-100">
+                                                                    <p className="text-gray-400 mb-0.5 text-[7px]">Selling Price</p>
+                                                                    <p className="text-black">R{item.pricing?.selling_price_zar}</p>
+                                                                </div>
+                                                                <div className="bg-white p-2 rounded-lg border border-gray-100">
+                                                                    <p className="text-gray-400 mb-0.5 text-[7px]">Vendor Total</p>
+                                                                    <p className="text-gray-900">R{item.pricing?.supplier_totalprice}</p>
+                                                                </div>
+                                                                <div className="bg-white p-2 rounded-lg border border-gray-100">
+                                                                    <p className="text-gray-400 mb-0.5 text-[7px]">Customer Total</p>
+                                                                    <p className="text-green-600">R{item.pricing?.customer_totalprice}</p>
+                                                                </div>
+                                                            </div>
+
+                                                            <a
+                                                                href={item.source_link}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="block w-full text-center py-2 bg-white border border-dashed border-gray-300 rounded-xl text-[8px] font-black text-gray-400 hover:text-black hover:border-black transition-all uppercase tracking-widest"
+                                                            >
+                                                                View Source Link
+                                                            </a>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Customer Details */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useEffect, useState } from 'react';
 import Link from 'next/link';
 
 import FAQ from '../../components/FAQ';
@@ -14,6 +14,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { Truck, ShieldCheck, RefreshCcw, Headset, Menu, Search, ShoppingBag, Star, Minus, Plus, ChevronDown, ChevronUp, Heart, CheckCircle2, ArrowRight, X, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+interface Variant {
+  [key: string]: string[];
+}
+
 export default function Product() {
   const router = useRouter();
   const [product, setProduct] = useState<any>(null);
@@ -25,10 +29,7 @@ export default function Product() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<any[]>([]);
-  const productVariants = [
-    { Color: ['Black', 'White', 'Blue'] },
-    { Size: ['1', '2', '3'] }
-  ];
+
   const [activeImage, setActiveImage] = useState(0);
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [mockProducts] = useState([
@@ -57,7 +58,7 @@ export default function Product() {
 
         // Dynamically initialize selectedVariant if productVariants or API data exists
         // Here we use the local productVariants as requested
-        const initialVariants = productVariants.map(v => {
+        const initialVariants = data.variants.map((v: Variant) => {
           const key = Object.keys(v)[0];
           return { [key]: (v as any)[key][0] };
         });
@@ -400,11 +401,7 @@ export default function Product() {
             </div>
 
             <div className="space-y-4 pt-4 border-t border-gray-100">
-              {[
-                "Premium quality direct to your door.",
-                "High performance materials for best results.",
-                "Eco-friendly and sustainable packaging."
-              ].map((benefit, i) => (
+              {product.benefit.map((benefit: any, i: any) => (
                 <div key={i} className="flex items-center gap-3">
                   <div className="w-5 h-5 rounded-full bg-black/5 flex items-center justify-center">
                     <CheckCircle2 size={12} className="text-black" />
@@ -416,7 +413,7 @@ export default function Product() {
 
             {/* Selection (Placeholders like image) */}
             <div className="space-y-6 pt-6">
-              {productVariants.map((variantObj, idx) => {
+              {product.variants.map((variantObj: any, idx: any) => {
                 const variantName = Object.keys(variantObj)[0];
                 const options = (variantObj as any)[variantName];
                 return (

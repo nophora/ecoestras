@@ -93,6 +93,7 @@ type Product = {
         estimated_profit: number;
     };
     category: string[];
+    product_images: string[];
     benefit?: string[];
     visitors?: { timestamp: string; session: string }[];
     cart_events?: { timestamp: string; session: string }[];

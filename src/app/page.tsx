@@ -2,25 +2,24 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { getProduct, getHomepage, trackVisitor, trackCart, trackCheckout } from '../lib/api';
-import { Menu, Search, ShoppingBag, ArrowRight, Heart, Star } from 'lucide-react';
+import { useRouter } from 'next/navigation'; //,
+import { getHomepage, getPublicProducts, trackCheckout } from '../lib/api';
+import { Menu, Search, ShoppingBag, ArrowRight, Heart, Star, X, Trash2 } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function Home() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
-    const [product, setProduct] = useState<any>(null);
     const [homeData, setHomeData] = useState<any>(null);
-    const [mockProducts] = useState([
-        { id: '1', name: 'Smart Trash Can', desc: 'For Bedroom, Living And Room Kitchen', price: 37.56, discount: 10, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-        { id: '2', name: 'Electric Hairball', desc: 'Smart Trimmer Digital Display Fabric Portable', price: 17.79, discount: 20, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-        { id: '3', name: 'Cookit Knife Set', desc: 'Chef Knives with Non-Slip German Stainless Steel', price: 93.90, discount: 40, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-        { id: '4', name: 'Pet Bed Warming Soft', desc: 'Soft Sleeping Bag Cushion Puppy Kennel', price: 61.28, discount: 15, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-        { id: '5', name: 'Smart Kettle Pro', desc: 'Temperature Control with App Integration', price: 549.00, discount: 5, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-        { id: '6', name: 'Wireless Charger Pad', desc: '15W Fast Charging for iPhone and Galaxy', price: 299.00, discount: 12, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-        { id: '7', name: 'Mini Humidifier', desc: 'USB Powered with Night Light Mode', price: 189.50, discount: 25, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-        { id: '8', name: 'Ergonomic Mouse', desc: 'Vertical Wireless Mouse with DPI Control', price: 420.00, discount: 18, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-    ]);
+    const [mockProducts, setMockProducts] = useState<any>(null);
+
+    const [sessionId, setSessionId] = useState('');
+    const [cartCount, setCartCount] = useState(0);
+    const [isCartOpen, setIsCartOpen] = useState(false);
+    const [cartItems, setCartItems] = useState<any[]>([]);
+
+    const [isMobile, setIsMobile] = useState(false);
+
 
     const [testimonials] = useState([
         {
@@ -44,15 +43,32 @@ export default function Home() {
     ]);
 
     useEffect(() => {
+        let sid = localStorage.getItem('session_id');
+        if (!sid) {
+            sid = uuidv4();
+            localStorage.setItem('session_id', sid);
+        }
+        setSessionId(sid);
+
         const fetchData = async () => {
             try {
                 // Use the product ID that was used previously
-                const [productInfo, homepageInfo] = await Promise.all([
-                    getProduct('agzo-fukqib5peeq'),
-                    getHomepage()
+                const [homepageInfo, activeProducts] = await Promise.all([
+                    getHomepage(), getPublicProducts(16)
                 ]);
-                setProduct(productInfo);
                 setHomeData(homepageInfo);
+                setMockProducts(activeProducts);
+                // Initialize cart count from localStorage
+                const existingCart = localStorage.getItem('Cart_order');
+                if (existingCart) {
+                    try {
+                        const items = JSON.parse(existingCart);
+                        setCartCount(items.length);
+                        setCartItems(items);
+                    } catch (e) {
+                        console.error('Error parsing cart:', e);
+                    }
+                }
             } catch (err) {
                 console.error('Error fetching homepage data:', err);
                 // Fallback to defaults or seed data if empty
@@ -62,7 +78,84 @@ export default function Home() {
         };
 
         fetchData();
+
+        // Function to check the screen width
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 750);
+        };
+
+        // Run it once immediately on mount to get the initial size
+        handleResize();
+
+        // Listen for window resizes
+        window.addEventListener('resize', handleResize);
+
+        // Cleanup the listener when the component unmounts
+        return () => window.removeEventListener('resize', handleResize);
+
+
     }, []);
+
+    const removeFromCart = (index: number) => {
+        try {
+            const getCartStr = localStorage.getItem('Cart_order');
+            if (getCartStr) {
+                let cartArray = JSON.parse(getCartStr);
+                cartArray = cartArray.filter((_: any, i: number) => i !== index);
+                localStorage.setItem('Cart_order', JSON.stringify(cartArray));
+                setCartCount(cartArray.length);
+                setCartItems(cartArray);
+            }
+        } catch (err) {
+            console.error('Error removing item:', err);
+        }
+    };
+
+    const subtotal = cartItems.reduce((acc, item) => acc + item.pricing.customer_totalprice, 0);
+
+    const carterToCheckoutButton = async () => {
+        let local_product_id = localStorage.getItem('local_product_id');
+        if (!local_product_id) return;
+
+        let getCartStr = localStorage.getItem('Cart_order');
+
+        if (!getCartStr) {
+            console.log('Carter is empty:');
+        } else {
+            try {
+                const cartBucket = JSON.parse(getCartStr);
+
+                const sendToCheckout = {
+                    store_id: 'ecoestras',
+                    customer: {
+                        name: '',
+                        email: '',
+                        phone: '',
+                        address: '',
+                        city: '',
+                        postal_code: '',
+                    },
+                    cart_bucket: cartBucket,
+                    status: {
+                        payment: 'PENDING',
+                        fulfillment: 'UNFULFILLED'
+                    },
+                    payfast_pf_payment_id: '',
+                    createdAt: Date.now()
+                };
+
+                localStorage.removeItem('pending_order');
+                localStorage.setItem('pending_order', JSON.stringify(sendToCheckout));
+
+                console.log('[home] Sending trackCheckout...');
+                await trackCheckout(local_product_id, sessionId);
+
+                router.push('/checkout');
+            } catch (err) {
+                console.error('[home] Checkout failed:', err);
+            }
+        }
+    };
 
     if (loading) return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-white">
@@ -131,9 +224,14 @@ export default function Home() {
                 </div>
 
                 <div className="flex items-center gap-6">
-                    <button className="relative hover:scale-110 transition-transform active:scale-95 mr-2">
+                    <button
+                        onClick={() => setIsCartOpen(true)}
+                        className="relative hover:scale-110 transition-transform active:scale-95 mr-2"
+                    >
                         <ShoppingBag size={20} strokeWidth={2} />
-                        <span className="absolute -top-1 -right-1 bg-white text-black text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">1</span>
+                        <span className="absolute -top-1 -right-1 bg-white text-black text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-black/10 shadow-sm">
+                            {cartCount}
+                        </span>
                     </button>
                 </div>
             </header>
@@ -164,7 +262,7 @@ export default function Home() {
                         </p>
 
                         <Link
-                            href={`/product`}
+                            href={`/product/${displayHome.hero.product_id}`}
                             className="inline-flex items-center gap-3 px-10 py-4 bg-white text-black text-[11px] font-black uppercase tracking-[0.2em] rounded-full shadow-2xl hover:scale-110 hover:bg-gray-100 transition-all active:scale-95 group"
                         >
                             Shop Now
@@ -179,7 +277,7 @@ export default function Home() {
                 Budget Friendly Shopping
             </div>
 
-            <section className="bg-white px-2 md:px-10 pb-4 rounded-t-[3rem] relative z-30 -mt-8">
+            <section className={`bg-white px-2 md:px-10 pb-4 ${isMobile ? 'rounded-t-[11px]' : 'rounded-t-[3rem]'} relative z-30 -mt-8`}>
                 <div className="max-w-7xl mx-auto pt-10">
                     <div className="flex items-center justify-between mb-8 px-4">
                         <div>
@@ -193,14 +291,14 @@ export default function Home() {
                     </div>
 
                     <div className="flex overflow-x-auto gap-4 px-4 no-scrollbar pb-8 scroll-smooth">
-                        {mockProducts.map((p) => (
-                            <div key={p.id} className="min-w-[180px] md:min-w-[220px] group cursor-pointer">
-                                <Link href={`/product?id=${displayHome.hero.product_id}`}>
+                        {mockProducts.slice(0, 8).map((p) => (
+                            <div key={p._id} className="min-w-[180px] md:min-w-[220px] group cursor-pointer">
+                                <Link href={`/product/${p.product_id}`}>
                                     <div className="aspect-square rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden relative mb-4">
                                         <img
-                                            src={p.img}
-                                            alt={p.name}
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                            src={p.product_images[0]}
+                                            alt={p.product_name}
+                                            className="w-full h-[180px] md:h-[220px] object-cover group-hover:scale-110 transition-transform duration-700"
                                         />
                                         <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-sm">
                                             <Heart size={14} />
@@ -208,16 +306,18 @@ export default function Home() {
                                     </div>
                                     <div className="space-y-1">
                                         <h3 className="text-[11px] font-black uppercase text-gray-900 truncate">
-                                            {p.name}
+                                            {p.product_name}
                                         </h3>
                                         <p className="text-[9px] font-bold text-gray-400 line-clamp-2 leading-tight h-6">
-                                            {p.desc}
+                                            {p.description_specifications[0].title}
                                         </p>
                                         <div className="flex items-center gap-2 pt-2">
-                                            <p className="text-sm font-black text-gray-900 italic">R{p.price.toFixed(2)}</p>
-                                            <div className="px-2 py-0.5 rounded-full border border-gray-200 text-[8px] font-black text-gray-500">
-                                                -{p.discount}%
-                                            </div>
+                                            <p className="text-sm font-black text-gray-900 italic">R{p.pricing.selling_price_zar}</p>
+
+                                            <div className={`px-2 py-0.5 rounded-full border border-gray-200 text-[8px] font-black text-gray-500 ${p.pricing.original_price_zar > p.pricing.selling_price_zar ? '' : 'invisible'}`}>
+                                                {p.pricing.original_price_zar > p.pricing.selling_price_zar ? `-${Math.round(((p.pricing.original_price_zar - p.pricing.selling_price_zar) / p.pricing.original_price_zar) * 100)}%`
+                                                    : '0%'}</div>
+
                                         </div>
                                         <p className="text-[8px] font-bold text-gray-300 uppercase italic">Estimated</p>
                                     </div>
@@ -241,8 +341,8 @@ export default function Home() {
                     {/* Middle Highlight Section */}
                     {displayHome.middlesection && (
                         <div className="group cursor-pointer">
-                            <Link href={`/product?id=${displayHome.middlesection.product_id}`} className="flex flex-col md:flex-row items-center gap-12">
-                                <div className="w-full md:w-1/2 overflow-hidden rounded-[3rem] aspect-[4/3] bg-gray-50 flex items-center justify-center">
+                            <Link href={`/product/${displayHome.middlesection.product_id}`} className="flex flex-col md:flex-row items-center gap-12">
+                                <div className={`w-full ${isMobile ? 'md:w-[100%]' : 'md:w-1/2'} overflow-hidden ${isMobile ? 'rounded-[20px]' : 'rounded-[3rem]'} aspect-[4/3] bg-gray-50 flex items-center justify-center`}>
                                     <img
                                         src={displayHome.middlesection.icon}
                                         alt={displayHome.middlesection.title1}
@@ -250,11 +350,11 @@ export default function Home() {
                                     />
                                 </div>
                                 <div className="w-full md:w-1/2 space-y-6">
-                                    <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-tight text-black">
+                                    <h2 className="text-3xl md:text-6xl font-black uppercase tracking-tighter leading-tight text-black">
                                         {displayHome.middlesection.title1}
                                     </h2>
                                     <p className="text-2xl font-black text-gray-900 italic">
-                                        R1588,37
+                                        {displayHome.middlesection.title2}
                                     </p>
                                     <div className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border-b-2 border-black pb-1 group-hover:gap-4 transition-all">
                                         Explore Collection <ArrowRight size={12} strokeWidth={3} />
@@ -271,7 +371,7 @@ export default function Home() {
                 Weekly Deals
             </div>
 
-            <section className="bg-white px-2 md:px-10 pb-20 rounded-t-[3rem] relative z-30 -mt-8">
+            <section className={`bg-white px-2 md:px-10 pb-4 ${isMobile ? 'rounded-t-[11px]' : 'rounded-t-[3rem]'} relative z-30 -mt-8`}>
                 <div className="max-w-7xl mx-auto pt-10 space-y-24">
                     {/* Duplicated Carousel */}
                     <div>
@@ -287,14 +387,14 @@ export default function Home() {
                         </div>
 
                         <div className="flex overflow-x-auto gap-4 px-4 no-scrollbar pb-8 scroll-smooth">
-                            {mockProducts.map((p) => (
-                                <div key={p.id} className="min-w-[180px] md:min-w-[220px] group cursor-pointer">
-                                    <Link href={`/product?id=${displayHome.hero.product_id}`}>
+                            {mockProducts.reverse().slice(0, 8).map((p) => (
+                                <div key={p._id} className="min-w-[180px] md:min-w-[220px] group cursor-pointer">
+                                    <Link href={`/product/${p.product_id}`}>
                                         <div className="aspect-square rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden relative mb-4">
                                             <img
-                                                src={p.img}
-                                                alt={p.name}
-                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                src={p.product_images[0]}
+                                                alt={p.product_name}
+                                                className="w-full h-[180px] md:h-[220px] object-cover group-hover:scale-110 transition-transform duration-700"
                                             />
                                             <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-sm">
                                                 <Heart size={14} />
@@ -302,16 +402,18 @@ export default function Home() {
                                         </div>
                                         <div className="space-y-1">
                                             <h3 className="text-[11px] font-black uppercase text-gray-900 truncate">
-                                                {p.name}
+                                                {p.product_name}
                                             </h3>
                                             <p className="text-[9px] font-bold text-gray-400 line-clamp-2 leading-tight h-6">
-                                                {p.desc}
+                                                {p.description_specifications[0].title}
                                             </p>
                                             <div className="flex items-center gap-2 pt-2">
-                                                <p className="text-sm font-black text-gray-900 italic">R{p.price.toFixed(2)}</p>
-                                                <div className="px-2 py-0.5 rounded-full border border-gray-200 text-[8px] font-black text-gray-500">
-                                                    -{p.discount}%
-                                                </div>
+                                                <p className="text-sm font-black text-gray-900 italic">R{p.pricing.selling_price_zar}</p>
+
+                                                <div className={`px-2 py-0.5 rounded-full border border-gray-200 text-[8px] font-black text-gray-500 ${p.pricing.original_price_zar > p.pricing.selling_price_zar ? '' : 'invisible'}`}>
+                                                    {p.pricing.original_price_zar > p.pricing.selling_price_zar ? `-${Math.round(((p.pricing.original_price_zar - p.pricing.selling_price_zar) / p.pricing.original_price_zar) * 100)}%`
+                                                        : '0%'}</div>
+
                                             </div>
                                             <p className="text-[8px] font-bold text-gray-300 uppercase italic">Estimated</p>
                                         </div>
@@ -341,8 +443,8 @@ export default function Home() {
 
                             return (
                                 <div key={i} className="group cursor-pointer space-y-6">
-                                    <Link href={`/product?id=${section.product_id}`}>
-                                        <div className="aspect-square overflow-hidden rounded-[2.5rem] bg-gray-50 relative">
+                                    <Link href={`/product/${section.product_id}`}>
+                                        <div className={`aspect-square overflow-hidden ${isMobile ? 'rounded-[20px]' : 'rounded-[2.5rem]'} bg-gray-50 relative`}>
                                             <img
                                                 src={section.icon}
                                                 alt={section.title1}
@@ -474,6 +576,83 @@ export default function Home() {
                     </div>
                 </div>
             </footer>
+
+            {/* Cart Drawer */}
+            <div className={`fixed inset-0 z-[1000] transition-opacity duration-500 ${isCartOpen ? 'visible opacity-100' : 'invisible opacity-0'}`}>
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
+                <div className={`absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl transition-transform duration-500 transform ${isCartOpen ? 'translate-x-0' : 'translate-x-full'} flex flex-col`}>
+                    <div className="p-8 border-b border-gray-100 flex items-center justify-between">
+                        <h2 className="text-xl font-black italic uppercase tracking-widest text-black">Cart</h2>
+                        <button onClick={() => setIsCartOpen(false)} className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-black hover:bg-gray-100 transition-colors">
+                            <X size={20} />
+                        </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-8 space-y-8 no-scrollbar">
+                        {cartItems.length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
+                                <ShoppingBag size={48} className="text-gray-200" />
+                                <p className="text-xs font-black uppercase tracking-widest text-gray-400">Your cart is empty</p>
+                                <button onClick={() => setIsCartOpen(false)} className="px-8 py-3 bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-full">Continue Shopping</button>
+                            </div>
+                        ) : (
+                            cartItems.map((item, idx) => (
+                                <div key={idx} className="flex gap-6 group">
+                                    <div className="w-24 h-24 rounded-2xl bg-gray-50 overflow-hidden border border-gray-100 shrink-0">
+                                        <img src={item.product_icon} alt={item.name} className="w-full h-full object-cover" />
+                                    </div>
+                                    <div className="flex-1 flex flex-col justify-between py-1">
+                                        <div>
+                                            <h3 className="text-xs font-black uppercase tracking-tight text-black mb-1">{item.name}</h3>
+                                            <div className="flex flex-wrap gap-2 mb-2">
+                                                {item.variant.map((v: any, i: number) => {
+                                                    const key = Object.keys(v)[0];
+                                                    return (
+                                                        <span key={i} className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">
+                                                            {key}: {v[key]}
+                                                        </span>
+                                                    );
+                                                })}
+                                            </div>
+                                            <p className="text-xs font-black text-black italic">R{item.pricing.customer_totalprice.toFixed(2)}</p>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase">Qty: {item.quantity}</span>
+                                            <button
+                                                onClick={() => removeFromCart(idx)}
+                                                className="text-[9px] font-black uppercase tracking-tighter text-red-500 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <Trash2 size={12} />
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    <div className="p-8 bg-gray-50/50 border-t border-gray-100 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Subtotal</span>
+                            <span className="text-xl font-black italic text-black font-sans">R{subtotal.toFixed(2)}</span>
+                        </div>
+                        <p className="text-[9px] font-bold text-gray-400 leading-relaxed uppercase tracking-tight text-center">
+                            Free Shipping. Taxes Included.
+                        </p>
+                        <button
+                            onClick={() => {
+                                setIsCartOpen(false);
+                                carterToCheckoutButton();
+                            }}
+                            className="w-full py-5 bg-black text-white font-black uppercase tracking-[0.2em] text-xs shadow-2xl hover:bg-gray-900 transition-all active:scale-[0.98] rounded-2xl disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:shadow-none"
+                            disabled={cartItems.length === 0}
+                        >
+                            Check Out
+                        </button>
+                    </div>
+                </div>
+            </div>
         </main>
     );
 }

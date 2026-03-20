@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://ecoestras-api.onrender.com/api';
 
 // Helper to get token from localStorage
 const getAuthToken = () => {
@@ -64,7 +64,7 @@ export async function getProduct(id: string) {
         console.error('API Error:', res.status, res.statusText, text);
         throw new Error(`Failed to fetch product: ${res.status} ${res.statusText}`);
     }
-    console.log('res', res);
+
     const data = await res.json();
     return data;
 }
@@ -137,6 +137,19 @@ export async function deleteOrder(id: string) {
         method: 'DELETE'
     });
     if (!res.ok) throw new Error('Failed to delete order');
+    return await res.json();
+}
+
+// NEW: For the public homepage
+export async function getPublicProducts(limit?: number) {
+
+    // If a limit is provided, add it to the URL. Otherwise, just call the normal URL.
+    const url = limit
+        ? `${API_URL}/public/products?limit=${limit}`
+        : `${API_URL}/public/products`;
+
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error('Failed to fetch public products');
     return await res.json();
 }
 

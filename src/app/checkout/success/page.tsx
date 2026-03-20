@@ -14,6 +14,10 @@ function SuccessContent() {
         const id = searchParams.get('track_id');
         if (id) {
             setTrackId(id);
+            // Clear Carter after Successfull Payment
+            localStorage.removeItem('Cart_order');
+            localStorage.removeItem('pending_order');
+            localStorage.removeItem('session_id');
         }
     }, [searchParams]);
 

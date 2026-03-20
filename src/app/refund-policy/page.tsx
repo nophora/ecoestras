@@ -117,7 +117,7 @@ export default function RefundPolicy() {
                                     </p>
                                     <a
                                         href="mailto:support@ecoestras.co.za"
-                                        className="text-2xl font-black text-black hover:text-gray-600 transition-colors uppercase tracking-tight"
+                                        className="text-1xl md:text-2xl font-black text-black hover:text-gray-600 transition-colors uppercase tracking-tight"
                                     >
                                         support@ecoestras.co.za
                                     </a>

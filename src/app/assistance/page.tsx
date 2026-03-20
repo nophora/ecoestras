@@ -19,7 +19,7 @@ export default function AssistancePage() {
         setStatus('submitting');
 
         try {
-            const res = await fetch('http://localhost:5000/api/assistance', {
+            const res = await fetch('https://ecoestras-api.onrender.com/api/assistance', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

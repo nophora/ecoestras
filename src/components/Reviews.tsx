@@ -26,13 +26,13 @@ export default function Reviews({ comments }: ReviewsProps) {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 -mx-3 md:mx-0">
                     {comments.map((review, idx) => (
                         <div
                             key={idx}
-                            className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300"
+                            className="bg-white p-4 md:p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300"
                         >
-                            <div className="flex gap-4 h-full">
+                            <div className="flex gap-3 md:gap-4 h-full">
                                 {/* Left Content: Info & Comment */}
                                 <div className="flex-1 flex flex-col">
                                     <div className="flex items-center gap-2 mb-1">
@@ -54,7 +54,7 @@ export default function Reviews({ comments }: ReviewsProps) {
                                     </div>
 
                                     <div className="flex-1">
-                                        <p className="text-[13px] text-gray-800 font-bold leading-snug">
+                                        <p className="text-[11px] md:text-[13px] text-gray-800 font-bold leading-snug">
                                             {review.comment}
                                         </p>
                                     </div>

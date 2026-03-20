@@ -64,7 +64,11 @@ export default function CheckoutPage() {
         };
 
         try {
-            const res = await fetch('http://localhost:5000/api/orders', {
+
+            // If you have an API_URL variable in your environment, use it like this:
+            const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+            const res = await fetch(`${API_URL}/orders`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(finalOrder)
@@ -91,6 +95,7 @@ export default function CheckoutPage() {
                     localStorage.removeItem('pending_order');
                     form.submit();
                 } else {
+
                     // Fallback to manual success if no PayFast data (shouldn't happen)
                     localStorage.removeItem('pending_order');
                     setIsSuccess(true);
@@ -238,37 +243,46 @@ export default function CheckoutPage() {
                             </form>
                         </section>
 
-                        <section className="bg-white rounded-[2.5rem] shadow-soft border border-gray-100 p-8 md:p-12">
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600">
-                                    <CreditCard size={24} />
+                        {/* 1. OUTER SECTION: Changed p-5 to p-4 on mobile to maximize the card's width on the screen */}
+                        <section className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-soft border border-gray-100 p-4 md:p-12">
+
+                            <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
+                                <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600">
+                                    <CreditCard className="w-5 h-5 md:w-6 md:h-6" />
                                 </div>
-                                <h2 className="text-2xl font-black text-gray-900 font-heading tracking-tight">Payment Method</h2>
+                                <h2 className="text-xl md:text-2xl font-black text-gray-900 font-heading tracking-tight">Payment Method</h2>
                             </div>
 
-                            <div className="p-6 rounded-3xl border-2 border-black bg-gray-50 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="bg-white p-1 rounded-xl shadow-sm flex items-center justify-center min-w-[120px] min-h-[48px]">
-                                        <svg width="110" height="32" viewBox="0 0 110 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="PayFast">
-                                            {/* payfast wordmark */}
+                            {/* 2. INNER BOX: Changed items-center to items-start on mobile so the radio button stays near the top */}
+                            <div className="p-4 md:p-6 rounded-2xl md:rounded-3xl border-2 border-black bg-gray-50 flex items-start md:items-center justify-between gap-4">
+
+                                {/* 3. YOUR FIX: flex-col on mobile, md:flex-row on desktop! */}
+                                <div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4 flex-1">
+
+                                    {/* LOGO BOX: Made it a bit bigger (90px) now that it has its own dedicated space */}
+                                    <div className="bg-white p-1 rounded-xl shadow-sm flex items-center justify-center w-[90px] md:w-[120px] h-[40px] md:h-[48px] flex-shrink-0">
+                                        <svg className="w-full h-auto" viewBox="0 0 110 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="PayFast">
                                             <text x="0" y="22" fill="#005CB9" style={{ font: 'bold 18px sans-serif', letterSpacing: '-0.5px' }}>payfast</text>
-                                            {/* red chevron */}
                                             <path d="M98 10L106 16L98 22" stroke="#E41F35" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                                            {/* by network tagline (optional but professional) */}
                                             <text x="35" y="30" fill="#005CB9" style={{ font: '6px sans-serif', opacity: 0.8 }}>by network</text>
                                         </svg>
                                     </div>
-                                    <div>
-                                        <p className="font-black text-gray-900">Secure Online Payment</p>
-                                        <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Instant EFT, Card, Masterpass</p>
+
+                                    {/* TEXT: Now has 100% of the width below the logo! We can bump the font size back up a bit. */}
+                                    <div className="flex-1">
+                                        <p className="font-black text-gray-900 text-[14px] md:text-base leading-tight md:leading-normal">Secure Online Payment</p>
+                                        <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider md:tracking-widest mt-1">Instant EFT, Card, Masterpass</p>
                                     </div>
                                 </div>
-                                <div className="w-6 h-6 rounded-full border-4 border-black bg-white shadow-inner"></div>
+
+                                {/* RADIO BUTTON: Stays locked to the top right on mobile, centers on desktop */}
+                                <div className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 rounded-full border-[3px] md:border-4 border-black bg-white shadow-inner mt-2 md:mt-0"></div>
                             </div>
 
-                            <p className="mt-8 text-sm text-gray-500 font-medium leading-relaxed">
+                            <p className="mt-6 md:mt-8 text-[12px] md:text-sm text-gray-500 font-medium leading-relaxed">
                                 After clicking “Complete Order”, you will be redirected to PayFast to complete your purchase securely.
-                                <span className="text-black font-black"> Free shipping applied to all South African orders.</span>
+                                {/* Added 'block md:inline' to drop this onto its own line on mobile for better readability */}
+                                <span className="text-black font-black block mt-2 md:inline md:mt-0"> Free shipping applied to all South African orders.</span>
                             </p>
                         </section>
                     </div>

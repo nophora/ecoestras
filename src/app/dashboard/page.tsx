@@ -61,11 +61,7 @@ type Order = {
         name: string;
         product_icon: string;
         quantity: number;
-        variant: {
-            color: string;
-            pairs: number;
-            total_strips: number;
-        };
+        variant: any;
         pricing: {
             selling_price_zar: number;
             supplier_cost_zar: number;
@@ -97,6 +93,7 @@ type Product = {
         estimated_profit: number;
     };
     category: string[];
+    benefit?: string[];
     visitors?: { timestamp: string; session: string }[];
     cart_events?: { timestamp: string; session: string }[];
     checkout_events?: { timestamp: string; session: string }[];
@@ -117,6 +114,9 @@ type AssistanceRequest = {
     createdAt: string;
 };
 
+
+
+
 export default function DashboardPage() {
     const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'products' | 'sessions' | 'assistant'>('dashboard');
     const [activeFilter, setFilter] = useState<'all' | 'undone' | 'done' | 'refunds' | 'assist' | 'paid' | 'unpaid' | 'unfulfilled'>('all');
@@ -136,6 +136,9 @@ export default function DashboardPage() {
         message: string;
         type: 'success' | 'error' | 'info';
     } | null>(null);
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [isProductPauseModalOpen, setIsProductPauseModalOpen] = useState(false);
+    const [productToToggle, setProductToToggle] = useState<string | null>(null);
 
     const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
     const [newProductForm, setNewProductForm] = useState({
@@ -144,13 +147,14 @@ export default function DashboardPage() {
         category: '',
         hero_banner: '',
         source_link: '',
-        store_id: 'pap-plus',
+        store_id: 'EcoEstras',
         selling_price_zar: 0,
         supplier_cost_zar: 0,
         original_price_zar: 0,
         product_images: '',
-        ingredients: '',
-        variants: [[]] as { [key: string]: any }[][], // Array of variants, each is an array of attribute objects
+        benefit: ['', '', ''],
+        // variants: [[]] as { [key: string]: any }[][], // Array of variants, each is an array of attribute objects
+        variants: [] as { [key: string]: string[] }[], // Now an array of objects
         faq: [{ question: '', answer: '' }],
         description_specifications: [{ title: '', info: '', image: '' }],
         comments: [] as any[], // Start empty, we'll add the first one in a useEffect or logic
@@ -215,6 +219,39 @@ export default function DashboardPage() {
 
         checkAuth();
     }, [router]);
+
+    // Form persistence for draft
+    useEffect(() => {
+        if (isAddProductModalOpen) {
+            const savedDraft = localStorage.getItem('test_product');
+            if (savedDraft) {
+                try {
+                    const draft = JSON.parse(savedDraft);
+                    setNewProductForm({
+                        ...draft,
+                        category: Array.isArray(draft.category) ? draft.category.join(', ') : draft.category,
+                        product_images: Array.isArray(draft.product_images) ? draft.product_images.join(', ') : draft.product_images,
+                        selling_price_zar: draft.pricing?.selling_price_zar || 0,
+                        supplier_cost_zar: draft.pricing?.supplier_cost_zar || 0,
+                        original_price_zar: draft.pricing?.original_price_zar || 0,
+                        benefit: draft.benefit && draft.benefit.length === 3 ? draft.benefit : ['', '', ''],
+                    });
+                } catch (e) {
+                    console.error('Error loading draft:', e);
+                }
+            } else {
+
+                function generateProductId() {
+                    return Math.random().toString(36).substring(2, 6) + "-" + Math.random().toString(36).substring(2, 14);
+                }
+
+                setNewProductForm({
+                    ...newProductForm,
+                    product_id: generateProductId(),
+                })
+            }
+        }
+    }, [isAddProductModalOpen]);
 
     useEffect(() => {
         setLastSyncTime(new Date().toLocaleTimeString());
@@ -288,7 +325,7 @@ export default function DashboardPage() {
             productStats.push({
                 name: p.product_name,
                 store: p.store_id,
-                icon: p.hero_banner,
+                icon: p.product_images[0],
                 visitors: vCount,
                 totalVisitors: p.visitors?.length || 0,
                 cart: cCount,
@@ -756,11 +793,20 @@ Order: ${order.order_track_id}
 Status: ${order.status.payment} | ${order.status.fulfillment}
 
 PRODUCTS:
-${order.cart_bucket.map(p => `- ${p.name} (${p.variant.color})
+${order.cart_bucket.map(p => {
+            const variantsStr = Array.isArray(p.variant)
+                ? p.variant.map((v: any) => {
+                    const key = Object.keys(v)[0];
+                    return `${key}: ${v[key]}`;
+                }).join(', ')
+                : (p.variant?.color || 'N/A');
+
+            return `- ${p.name} (${variantsStr})
   Qty: ${p.quantity}
   Selling: R${p.pricing.selling_price_zar}
   Vendor: R${p.pricing.supplier_cost_zar}
-  Source: ${p.source_link}`).join('\n\n')}
+  Source: ${p.source_link}`;
+        }).join('\n\n')}
 
 CUSTOMER DETAILS:
 Full Name: ${order.customer.name}
@@ -815,34 +861,35 @@ Total Amount: R${order.total_amount}
         }
     };
 
-    const addVariant = () => setNewProductForm(prev => ({ ...prev, variants: [...prev.variants, []] }));
-    const removeVariant = (index: number) => setNewProductForm(prev => ({ ...prev, variants: prev.variants.filter((_, i) => i !== index) }));
 
-    const addAttribute = (vIndex: number) => {
-        const updated = [...newProductForm.variants];
-        updated[vIndex] = [...updated[vIndex], { "": "" }]; // Default empty key-value pair
-        setNewProductForm(prev => ({ ...prev, variants: updated }));
+
+    const addAttribute = () => {
+        // Add a default empty object to the single array
+        setNewProductForm(prev => ({ ...prev, variants: [...prev.variants, { "": [] }] }));
     };
 
-    const updateAttribute = (vIndex: number, aIndex: number, key: string, value: any) => {
-        const updated = [...newProductForm.variants];
-        const attr = updated[vIndex][aIndex];
-        const oldKey = Object.keys(attr)[0];
 
-        // If updating key, remove old and add new
-        if (key !== oldKey) {
-            updated[vIndex][aIndex] = { [key]: value };
-        } else {
-            updated[vIndex][aIndex] = { [key]: value };
-        }
+
+    const updateAttribute = (index: number, key: string, valueStr: string) => {
+        const updated = [...newProductForm.variants];
+
+        // Split the comma-separated input string into an actual array
+        const valueArray = valueStr.split(',').map(v => v.trimStart());
+
+        // Replace the old object with the newly updated key and array
+        updated[index] = { [key]: valueArray };
 
         setNewProductForm(prev => ({ ...prev, variants: updated }));
     };
 
-    const removeAttribute = (vIndex: number, aIndex: number) => {
-        const updated = [...newProductForm.variants];
-        updated[vIndex] = updated[vIndex].filter((_, i) => i !== aIndex);
-        setNewProductForm(prev => ({ ...prev, variants: updated }));
+
+
+
+    const removeAttribute = (index: number) => {
+        setNewProductForm(prev => ({
+            ...prev,
+            variants: prev.variants.filter((_, i) => i !== index)
+        }));
     };
 
     const addFaq = () => setNewProductForm(prev => ({ ...prev, faq: [...prev.faq, { question: '', answer: '' }] }));
@@ -863,29 +910,43 @@ Total Amount: R${order.total_amount}
 
     const handleCreateProduct = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
         try {
-            const productData = {
+            const formattedProduct = {
                 ...newProductForm,
                 category: newProductForm.category.split(',').map(c => c.trim()).filter(Boolean),
                 product_images: newProductForm.product_images.split(',').map(c => c.trim()).filter(Boolean),
-                ingredients: newProductForm.ingredients.split(',').map(c => c.trim()).filter(Boolean),
+                benefit: newProductForm.benefit.filter(Boolean),
                 pricing: {
                     original_price_zar: Number(newProductForm.original_price_zar),
                     selling_price_zar: Number(newProductForm.selling_price_zar),
                     supplier_cost_zar: Number(newProductForm.supplier_cost_zar),
                     estimated_profit: Number(newProductForm.selling_price_zar) - Number(newProductForm.supplier_cost_zar)
                 },
-                variants: newProductForm.variants.map(variant =>
-                    variant.map(attr => {
-                        const key = Object.keys(attr)[0];
-                        const val = attr[key];
-                        // If value contains a comma and is a string, split into array
-                        const processedVal = (typeof val === 'string' && val.includes(','))
+
+
+
+                variants: newProductForm.variants.map(attr => {
+                    // 1. Get the key (e.g., "Color")
+                    const key = Object.keys(attr)[0];
+
+                    // 2. Get the value (e.g., "Black, White" or ["Black", "White"])
+                    const val = attr[key];
+
+                    // 3. Process the value into a clean array
+                    let processedVal = val;
+
+                    if (typeof val === 'string') {
+                        // If it's a string with commas, split it into an array
+                        processedVal = val.includes(',')
                             ? val.split(',').map(v => v.trim()).filter(Boolean)
-                            : val;
-                        return { [key]: processedVal };
-                    })
-                ),
+                            : [val.trim()].filter(Boolean); // If it's just one word, make it an array of one
+                    }
+
+                    // 4. Return the single object for your flat array
+                    return { [key]: processedVal };
+                }),
+
                 comments: newProductForm.comments.map(c => ({
                     ...c,
                     date: c.date || new Date().toISOString().split('T')[0],
@@ -893,29 +954,14 @@ Total Amount: R${order.total_amount}
                 })),
                 paused: false
             };
-            await createProduct(productData);
-            setIsAddProductModalOpen(false);
-            setNewProductForm({
-                product_id: '',
-                product_name: '',
-                category: '',
-                hero_banner: '',
-                source_link: '',
-                store_id: 'pap-plus',
-                selling_price_zar: 0,
-                supplier_cost_zar: 0,
-                original_price_zar: 0,
-                product_images: '',
-                ingredients: '',
-                variants: [[]],
-                faq: [{ question: '', answer: '' }],
-                description_specifications: [{ title: '', info: '', image: '' }],
-                comments: [], // Reset to empty, the useEffect will re-init it
-            });
-            fetchProducts();
+            // Save to localStorage for preview
+            localStorage.setItem('test_product', JSON.stringify(formattedProduct));
+            router.push('/testproduct');
         } catch (err) {
-            console.error(err);
-            alert('Failed to create product');
+            console.error('Error preparing preview:', err);
+            alert('Error preparing product preview');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -1137,7 +1183,7 @@ Total Amount: R${order.total_amount}
                                 </button>
                             )) : [
                                 { id: 'all', label: 'All' },
-                                { id: 'unfulfilled', label: 'Pending' },
+                                { id: 'unfulfilled', label: `(${orders.filter(e => e.status.fulfillment === "UNFULFILLED").length})Pending` },
                                 { id: 'done', label: 'Fulfilled' },
                                 { id: 'paid', label: 'Paid' },
                                 { id: 'unpaid', label: 'Unpaid' },
@@ -1227,8 +1273,9 @@ Total Amount: R${order.total_amount}
                                                     </span>
                                                 </div>
                                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                                    {req.Day}/{req.Month}/{req.Year}
+                                                    {req.Day}/{req.Month}/{req.Year} - {req.Number}
                                                 </p>
+
                                             </div>
                                             {req.status === 'DONE' && (
                                                 <div className="bg-green-50 text-green-600 p-2 rounded-full border border-green-100">
@@ -1369,7 +1416,22 @@ Total Amount: R${order.total_amount}
                                                                 </div>
                                                                 <div className="min-w-0">
                                                                     <p className="text-[10px] font-black text-gray-900 truncate uppercase">{item.name}</p>
-                                                                    <p className="text-[8px] font-bold text-gray-500 uppercase tracking-wider">{item.variant?.color} • {item.variant?.total_strips} Strips</p>
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {Array.isArray(item.variant) ? (
+                                                                            item.variant.map((v: any, i: number) => {
+                                                                                const key = Object.keys(v)[0];
+                                                                                return (
+                                                                                    <span key={i} className="text-[8px] font-bold text-gray-500 uppercase tracking-wider">
+                                                                                        {i > 0 && "• "} {key}: {v[key]}
+                                                                                    </span>
+                                                                                );
+                                                                            })
+                                                                        ) : (
+                                                                            <span className="text-[8px] font-bold text-gray-500 uppercase tracking-wider">
+                                                                                {item.variant?.color} {item.variant?.total_strips ? `• ${item.variant.total_strips} Strips` : ""}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             </div>
 
@@ -1545,7 +1607,7 @@ Total Amount: R${order.total_amount}
                                             className={`bg-white rounded-2xl p-6 shadow-xl border flex flex-col transition-all hover:shadow-2xl hover:scale-[1.02] ${product.paused ? 'opacity-60 grayscale-[0.5]' : 'border-gray-50'}`}
                                         >
                                             <div className="relative aspect-square rounded-2xl overflow-hidden mb-6 bg-gray-100 group">
-                                                <img src={product.hero_banner} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                                <img src={product.product_images[0]} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                                                 {product.paused && (
                                                     <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
                                                         <span className="text-white text-[10px] font-black uppercase tracking-widest bg-black/50 px-4 py-2 rounded-full border border-white/20">PAUSED</span>
@@ -1574,12 +1636,20 @@ Total Amount: R${order.total_amount}
 
                                                 <div className="grid grid-cols-2 gap-3 mb-8">
                                                     <div className="bg-gray-50 p-3 rounded-2xl">
-                                                        <p className="text-[7px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Selling Price</p>
-                                                        <p className="text-xs font-black text-gray-900">R{product.pricing.selling_price_zar}</p>
+                                                        <p className="text-[7px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Original</p>
+                                                        <p className="text-[10px] font-black text-gray-300 line-through">R{product.pricing.original_price_zar}</p>
                                                     </div>
                                                     <div className="bg-gray-50 p-3 rounded-2xl">
-                                                        <p className="text-[7px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Profit/Unit</p>
-                                                        <p className="text-xs font-black text-green-600">R{product.pricing.estimated_profit}</p>
+                                                        <p className="text-[7px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Selling</p>
+                                                        <p className="text-[10px] font-black text-gray-900">R{product.pricing.selling_price_zar}</p>
+                                                    </div>
+                                                    <div className="bg-gray-50 p-3 rounded-2xl">
+                                                        <p className="text-[7px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Cost</p>
+                                                        <p className="text-[10px] font-black text-orange-600">R{product.pricing.supplier_cost_zar}</p>
+                                                    </div>
+                                                    <div className="bg-gray-50 p-3 rounded-2xl">
+                                                        <p className="text-[7px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Profit</p>
+                                                        <p className="text-[10px] font-black text-green-600">R{product.pricing.estimated_profit}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1606,6 +1676,15 @@ Total Amount: R${order.total_amount}
                                                     className="w-full bg-white border-2 border-gray-100 hover:border-gray-200 text-gray-400 hover:text-gray-900 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all align-center flex items-center justify-center gap-2"
                                                 >
                                                     <ExternalLink size={14} /> Source Link
+                                                </a>
+
+                                                <a
+                                                    href={`/product/${product.product_id}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="w-full bg-white border-2 border-gray-100 hover:border-gray-200 text-gray-400 hover:text-gray-900 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all align-center flex items-center justify-center gap-2"
+                                                >
+                                                    <ExternalLink size={14} /> Product Link
                                                 </a>
                                             </div>
                                         </div>
@@ -2007,49 +2086,68 @@ Total Amount: R${order.total_amount}
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Selling Price (ZAR)</label>
-                                    <input
-                                        required
-                                        type="number"
-                                        className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold"
-                                        value={newProductForm.selling_price_zar}
-                                        onChange={e => setNewProductForm({ ...newProductForm, selling_price_zar: Number(e.target.value) })}
-                                    />
+                            <div className="bg-blue-50/30 p-8 rounded-[2rem] border border-blue-50/50 space-y-6">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-black">
+                                        <Tag size={14} />
+                                    </div>
+                                    <h5 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Pricing & Profitability</h5>
                                 </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Cost Price (ZAR)</label>
-                                    <input
-                                        required
-                                        type="number"
-                                        className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold"
-                                        value={newProductForm.supplier_cost_zar}
-                                        onChange={e => setNewProductForm({ ...newProductForm, supplier_cost_zar: Number(e.target.value) })}
-                                    />
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Original Price (ZAR)</label>
+                                        <input
+                                            type="number"
+                                            placeholder="e.g. 599"
+                                            className="w-full px-6 py-4 rounded-2xl bg-white border-2 border-transparent focus:border-black transition-all text-xs font-bold"
+                                            value={newProductForm.original_price_zar}
+                                            onChange={e => setNewProductForm({ ...newProductForm, original_price_zar: Number(e.target.value) })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Selling Price (ZAR)</label>
+                                        <input
+                                            required
+                                            type="number"
+                                            placeholder="e.g. 399"
+                                            className="w-full px-6 py-4 rounded-2xl bg-white border-2 border-transparent focus:border-black transition-all text-xs font-bold"
+                                            value={newProductForm.selling_price_zar}
+                                            onChange={e => setNewProductForm({ ...newProductForm, selling_price_zar: Number(e.target.value) })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Supplier Cost (ZAR)</label>
+                                        <input
+                                            required
+                                            type="number"
+                                            placeholder="e.g. 150"
+                                            className="w-full px-6 py-4 rounded-2xl bg-white border-2 border-transparent focus:border-black transition-all text-xs font-bold"
+                                            value={newProductForm.supplier_cost_zar}
+                                            onChange={e => setNewProductForm({ ...newProductForm, supplier_cost_zar: Number(e.target.value) })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between px-6 py-4 bg-white rounded-2xl border border-blue-100/50">
+                                    <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Live Profit Preview</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Est. Profit:</span>
+                                        <span className="text-sm font-black text-green-600">
+                                            R{(newProductForm.selling_price_zar - newProductForm.supplier_cost_zar).toFixed(2)}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Original Price (ZAR)</label>
-                                    <input
-                                        type="number"
-                                        className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold"
-                                        value={newProductForm.original_price_zar}
-                                        onChange={e => setNewProductForm({ ...newProductForm, original_price_zar: Number(e.target.value) })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Source Link (Vendor)</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Aliexpress/Supplier link"
-                                        className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold"
-                                        value={newProductForm.source_link}
-                                        onChange={e => setNewProductForm({ ...newProductForm, source_link: e.target.value })}
-                                    />
-                                </div>
+                            <div>
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Source Link (Vendor)</label>
+                                <input
+                                    type="text"
+                                    placeholder="Aliexpress/Supplier link"
+                                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold"
+                                    value={newProductForm.source_link}
+                                    onChange={e => setNewProductForm({ ...newProductForm, source_link: e.target.value })}
+                                />
                             </div>
 
                             <div>
@@ -2062,87 +2160,88 @@ Total Amount: R${order.total_amount}
                                 />
                             </div>
 
-                            <div>
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Ingredients (comma separated)</label>
-                                <textarea
-                                    placeholder="Glycerin, Xylitol, etc..."
-                                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold min-h-[80px]"
-                                    value={newProductForm.ingredients}
-                                    onChange={e => setNewProductForm({ ...newProductForm, ingredients: e.target.value })}
-                                />
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Product Benefits (Add 3)</label>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {[0, 1, 2].map((i) => (
+                                        <input
+                                            key={i}
+                                            type="text"
+                                            placeholder={`Benefit ${i + 1}`}
+                                            className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold"
+                                            value={newProductForm.benefit[i]}
+                                            onChange={e => {
+                                                const newBenefits = [...newProductForm.benefit];
+                                                newBenefits[i] = e.target.value;
+                                                setNewProductForm({ ...newProductForm, benefit: newBenefits });
+                                            }}
+                                        />
+                                    ))}
+                                </div>
                             </div>
+
 
                             {/* Variants Section */}
                             <div className="space-y-4 pt-4">
                                 <div className="flex justify-between items-center">
                                     <div className="space-y-1">
-                                        <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Product Variants</h4>
-                                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Each variant is a list of custom attributes</p>
+                                        <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Product Attributes</h4>
+                                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Manage your custom attributes (e.g., Color, Size)</p>
                                     </div>
-                                    <button type="button" onClick={addVariant} className="text-[10px] font-black text-blue-500 uppercase tracking-widest px-4 py-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">+ Add Variant</button>
+                                    <button type="button" onClick={addAttribute} className="text-[10px] font-black text-blue-500 uppercase tracking-widest px-4 py-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
+                                        + Add Attribute
+                                    </button>
                                 </div>
-                                {newProductForm.variants.map((variant, i) => (
-                                    <div key={i} className="p-8 bg-gray-50 rounded-[2.5rem] space-y-6 relative group border border-gray-100/50 shadow-sm">
-                                        <button type="button" onClick={() => removeVariant(i)} className="absolute top-6 right-6 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-50 rounded-xl"><Trash2 size={18} /></button>
 
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-black">
-                                                {i + 1}
-                                            </div>
-                                            <h5 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Variant Details</h5>
-                                        </div>
+                                <div className="p-8 bg-gray-50 rounded-[2.5rem] space-y-6 relative group border border-gray-100/50 shadow-sm">
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {newProductForm.variants.map((attr, index) => {
+                                            const key = Object.keys(attr)[0] || "";
 
-                                        <div className="space-y-4">
-                                            <div className="flex justify-between items-center px-2">
-                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Custom Attributes (e.g. name, color, pairs)</label>
-                                                <button type="button" onClick={() => addAttribute(i)} className="text-[9px] font-black text-blue-500 uppercase tracking-widest hover:underline">+ Add Attribute</button>
-                                            </div>
+                                            // Join the array back into a string so the input field can display it correctly
+                                            const valueArray = attr[key] || [];
+                                            const value = Array.isArray(valueArray) ? valueArray.join(', ') : valueArray;
 
-                                            <div className="grid grid-cols-1 gap-3">
-                                                {variant.map((attr, aIdx) => {
-                                                    const key = Object.keys(attr)[0] || "";
-                                                    const value = attr[key] || "";
-                                                    return (
-                                                        <div key={aIdx} className="flex gap-3 items-center group/attr bg-white p-3 rounded-2xl border border-gray-100">
-                                                            <div className="flex-1 grid grid-cols-2 gap-3">
-                                                                <div className="space-y-1">
-                                                                    <label className="text-[8px] font-black text-gray-300 uppercase tracking-[0.2em] ml-2">Label</label>
-                                                                    <input
-                                                                        placeholder="e.g. name"
-                                                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-50 bg-gray-50 focus:border-black focus:bg-white transition-all text-[10px] font-bold outline-none"
-                                                                        value={key}
-                                                                        onChange={e => updateAttribute(i, aIdx, e.target.value, value)}
-                                                                    />
-                                                                </div>
-                                                                <div className="space-y-1">
-                                                                    <label className="text-[8px] font-black text-gray-300 uppercase tracking-[0.2em] ml-2">Value (use commas for multiple)</label>
-                                                                    <input
-                                                                        placeholder="e.g. Red, Blue, Green"
-                                                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-50 bg-gray-50 focus:border-black focus:bg-white transition-all text-[10px] font-bold outline-none"
-                                                                        value={value}
-                                                                        onChange={e => updateAttribute(i, aIdx, key, e.target.value)}
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => removeAttribute(i, aIdx)}
-                                                                className="p-2 text-gray-300 hover:text-red-500 transition-colors"
-                                                            >
-                                                                <X size={14} />
-                                                            </button>
+                                            return (
+                                                <div key={index} className="flex gap-3 items-center group/attr bg-white p-3 rounded-2xl border border-gray-100">
+                                                    <div className="flex-1 grid grid-cols-2 gap-3">
+                                                        <div className="space-y-1">
+                                                            <label className="text-[8px] font-black text-gray-300 uppercase tracking-[0.2em] ml-2">Label</label>
+                                                            <input
+                                                                placeholder="e.g. Color"
+                                                                className="w-full px-4 py-2.5 rounded-xl border border-gray-50 bg-gray-50 focus:border-black focus:bg-white transition-all text-[10px] font-bold outline-none"
+                                                                value={key}
+                                                                onChange={e => updateAttribute(index, e.target.value, value)}
+                                                            />
                                                         </div>
-                                                    );
-                                                })}
-                                                {variant.length === 0 && (
-                                                    <div className="py-20 text-center bg-white rounded-3xl border border-dashed border-gray-300">
-                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No attributes added yet</p>
+                                                        <div className="space-y-1">
+                                                            <label className="text-[8px] font-black text-gray-300 uppercase tracking-[0.2em] ml-2">Value (use commas for multiple)</label>
+                                                            <input
+                                                                placeholder="e.g. Black, White"
+                                                                className="w-full px-4 py-2.5 rounded-xl border border-gray-50 bg-gray-50 focus:border-black focus:bg-white transition-all text-[10px] font-bold outline-none"
+                                                                value={value}
+                                                                onChange={e => updateAttribute(index, key, e.target.value)}
+                                                            />
+                                                        </div>
                                                     </div>
-                                                )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeAttribute(index)}
+                                                        className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+
+                                        {newProductForm.variants.length === 0 && (
+                                            <div className="py-20 text-center bg-white rounded-3xl border border-dashed border-gray-300">
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No attributes added yet</p>
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
-                                ))}
+                                </div>
                             </div>
 
                             {/* FAQ Section */}
@@ -2276,92 +2375,96 @@ Total Amount: R${order.total_amount}
                             </div>
                         </form>
                     </div>
-                </div>
-            )}
+                </div >
+            )
+            }
 
             {/* Edit Homepage Modal */}
-            {isEditHomeModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white rounded-3xl p-10 max-w-4xl w-full shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-300 overflow-y-auto max-h-[90vh]">
-                        <div className="flex justify-between items-center mb-8">
-                            <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tighter font-heading">
-                                Modify Landing Page
-                            </h3>
-                            <button onClick={() => setIsEditHomeModalOpen(false)} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        <form onSubmit={async (e) => {
-                            e.preventDefault();
-                            try {
-                                await updateHomepage(homeForm);
-                                setIsEditHomeModalOpen(false);
-                                setNotification({
-                                    message: 'Homepage updated successfully! Your changes are now live.',
-                                    type: 'success'
-                                });
-                            } catch (err) {
-                                console.error(err);
-                                setNotification({
-                                    message: 'Failed to update homepage. Please try again.',
-                                    type: 'error'
-                                });
-                            }
-                        }} className="space-y-10">
-
-                            {/* Hero Section */}
-                            <div className="space-y-6">
-                                <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest border-b pb-2">Hero Section</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Product ID Reference</label>
-                                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold" value={homeForm.hero.product_id} onChange={e => setHomeForm({ ...homeForm, hero: { ...homeForm.hero, product_id: e.target.value } })} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Banner Image URL</label>
-                                        <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold" value={homeForm.hero.banner} onChange={e => setHomeForm({ ...homeForm, hero: { ...homeForm.hero, banner: e.target.value } })} />
-                                    </div>
-                                    <div className="col-span-full space-y-4">
-                                        <input placeholder="Title 1" className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold" value={homeForm.hero.title1} onChange={e => setHomeForm({ ...homeForm, hero: { ...homeForm.hero, title1: e.target.value } })} />
-                                        <input placeholder="Title 2" className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold" value={homeForm.hero.title2} onChange={e => setHomeForm({ ...homeForm, hero: { ...homeForm.hero, title2: e.target.value } })} />
-                                        <textarea placeholder="Title 3 (Description)" className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold min-h-[80px]" value={homeForm.hero.title3} onChange={e => setHomeForm({ ...homeForm, hero: { ...homeForm.hero, title3: e.target.value } })} />
-                                    </div>
-                                </div>
+            {
+                isEditHomeModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                        <div className="bg-white rounded-3xl p-10 max-w-4xl w-full shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-300 overflow-y-auto max-h-[90vh]">
+                            <div className="flex justify-between items-center mb-8">
+                                <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tighter font-heading">
+                                    Modify Landing Page
+                                </h3>
+                                <button onClick={() => setIsEditHomeModalOpen(false)} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                                    <X size={20} />
+                                </button>
                             </div>
 
-                            {/* Grid Sections */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                {[
-                                    { key: 'middlesection', label: 'Middle Highlight' },
-                                    { key: 'downleft', label: 'Bottom Left' },
-                                    { key: 'downmiddle', label: 'Bottom Middle' },
-                                    { key: 'downright', label: 'Bottom Right' }
-                                ].map((section) => (
-                                    <div key={section.key} className="space-y-6 p-6 bg-gray-50 rounded-3xl border border-gray-100">
-                                        <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">{section.label}</h4>
-                                        <div className="space-y-4">
-                                            <input placeholder="Product ID" className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:border-black transition-all text-[10px] font-bold" value={(homeForm as any)[section.key].product_id} onChange={e => setHomeForm({ ...homeForm, [section.key]: { ...(homeForm as any)[section.key], product_id: e.target.value } })} />
-                                            <input placeholder="Icon URL" className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:border-black transition-all text-[10px] font-bold" value={(homeForm as any)[section.key].icon} onChange={e => setHomeForm({ ...homeForm, [section.key]: { ...(homeForm as any)[section.key], icon: e.target.value } })} />
-                                            <input placeholder="Title 1" className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:border-black transition-all text-[10px] font-bold" value={(homeForm as any)[section.key].title1} onChange={e => setHomeForm({ ...homeForm, [section.key]: { ...(homeForm as any)[section.key], title1: e.target.value } })} />
-                                            <input placeholder="Title 2" className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:border-black transition-all text-[10px] font-bold" value={(homeForm as any)[section.key].title2} onChange={e => setHomeForm({ ...homeForm, [section.key]: { ...(homeForm as any)[section.key], title2: e.target.value } })} />
+                            <form onSubmit={async (e) => {
+                                e.preventDefault();
+                                try {
+                                    await updateHomepage(homeForm);
+                                    setIsEditHomeModalOpen(false);
+                                    setNotification({
+                                        message: 'Homepage updated successfully! Your changes are now live.',
+                                        type: 'success'
+                                    });
+                                } catch (err) {
+                                    console.error(err);
+                                    setNotification({
+                                        message: 'Failed to update homepage. Please try again.',
+                                        type: 'error'
+                                    });
+                                }
+                            }} className="space-y-10">
+
+                                {/* Hero Section */}
+                                <div className="space-y-6">
+                                    <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest border-b pb-2">Hero Section</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Product ID Reference</label>
+                                            <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold" value={homeForm.hero.product_id} onChange={e => setHomeForm({ ...homeForm, hero: { ...homeForm.hero, product_id: e.target.value } })} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Banner Image URL</label>
+                                            <input className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold" value={homeForm.hero.banner} onChange={e => setHomeForm({ ...homeForm, hero: { ...homeForm.hero, banner: e.target.value } })} />
+                                        </div>
+                                        <div className="col-span-full space-y-4">
+                                            <input placeholder="Title 1" className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold" value={homeForm.hero.title1} onChange={e => setHomeForm({ ...homeForm, hero: { ...homeForm.hero, title1: e.target.value } })} />
+                                            <input placeholder="Title 2" className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold" value={homeForm.hero.title2} onChange={e => setHomeForm({ ...homeForm, hero: { ...homeForm.hero, title2: e.target.value } })} />
+                                            <textarea placeholder="Title 3 (Description)" className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white transition-all text-xs font-bold min-h-[80px]" value={homeForm.hero.title3} onChange={e => setHomeForm({ ...homeForm, hero: { ...homeForm.hero, title3: e.target.value } })} />
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+                                </div>
 
-                            <button type="submit" className="w-full bg-black text-white py-6 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-[1.02] transition-all active:scale-95">
-                                Update Home
-                            </button>
-                        </form>
+                                {/* Grid Sections */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    {[
+                                        { key: 'middlesection', label: 'Middle Highlight' },
+                                        { key: 'downleft', label: 'Bottom Left' },
+                                        { key: 'downmiddle', label: 'Bottom Middle' },
+                                        { key: 'downright', label: 'Bottom Right' }
+                                    ].map((section) => (
+                                        <div key={section.key} className="space-y-6 p-6 bg-gray-50 rounded-3xl border border-gray-100">
+                                            <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">{section.label}</h4>
+                                            <div className="space-y-4">
+                                                <input placeholder="Product ID" className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:border-black transition-all text-[10px] font-bold" value={(homeForm as any)[section.key].product_id} onChange={e => setHomeForm({ ...homeForm, [section.key]: { ...(homeForm as any)[section.key], product_id: e.target.value } })} />
+                                                <input placeholder="Icon URL" className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:border-black transition-all text-[10px] font-bold" value={(homeForm as any)[section.key].icon} onChange={e => setHomeForm({ ...homeForm, [section.key]: { ...(homeForm as any)[section.key], icon: e.target.value } })} />
+                                                <input placeholder="Title 1" className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:border-black transition-all text-[10px] font-bold" value={(homeForm as any)[section.key].title1} onChange={e => setHomeForm({ ...homeForm, [section.key]: { ...(homeForm as any)[section.key], title1: e.target.value } })} />
+                                                <input placeholder="Title 2" className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:border-black transition-all text-[10px] font-bold" value={(homeForm as any)[section.key].title2} onChange={e => setHomeForm({ ...homeForm, [section.key]: { ...(homeForm as any)[section.key], title2: e.target.value } })} />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <button type="submit" className="w-full bg-black text-white py-6 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-[1.02] transition-all active:scale-95">
+                                    Update Home
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Professional Toast Notification */}
-            {notification && (
-                <div className="fixed bottom-10 right-10 z-[100] animate-in slide-in-from-right-10 fade-in duration-500">
-                    <div className={`
+            {
+                notification && (
+                    <div className="fixed bottom-10 right-10 z-[100] animate-in slide-in-from-right-10 fade-in duration-500">
+                        <div className={`
                         relative overflow-hidden
                         backdrop-blur-xl border border-white/10
                         rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]
@@ -2369,39 +2472,40 @@ Total Amount: R${order.total_amount}
                         flex items-center gap-4
                         ${notification.type === 'success' ? 'bg-black/90' : 'bg-red-950/90'}
                     `}>
-                        {/* Glow effect */}
-                        <div className={`absolute -left-20 -top-20 w-40 h-40 rounded-full blur-[80px] opacity-20 ${notification.type === 'success' ? 'bg-green-400' : 'bg-red-500'}`} />
+                            {/* Glow effect */}
+                            <div className={`absolute -left-20 -top-20 w-40 h-40 rounded-full blur-[80px] opacity-20 ${notification.type === 'success' ? 'bg-green-400' : 'bg-red-500'}`} />
 
-                        <div className={`
+                            <div className={`
                             w-10 h-10 rounded-2xl flex items-center justify-center shrink-0
                             ${notification.type === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}
                         `}>
-                            {notification.type === 'success' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
-                        </div>
+                                {notification.type === 'success' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
+                            </div>
 
-                        <div className="flex flex-col gap-0.5">
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
-                                {notification.type === 'success' ? 'System Notification' : 'Error Detected'}
-                            </h4>
-                            <p className="text-sm font-bold text-white tracking-tight">
-                                {notification.message}
-                            </p>
-                        </div>
+                            <div className="flex flex-col gap-0.5">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
+                                    {notification.type === 'success' ? 'System Notification' : 'Error Detected'}
+                                </h4>
+                                <p className="text-sm font-bold text-white tracking-tight">
+                                    {notification.message}
+                                </p>
+                            </div>
 
-                        <button
-                            onClick={() => setNotification(null)}
-                            className="ml-auto p-2 rounded-xl hover:bg-white/5 text-white/20 hover:text-white transition-all"
-                        >
-                            <X size={16} />
-                        </button>
+                            <button
+                                onClick={() => setNotification(null)}
+                                className="ml-auto p-2 rounded-xl hover:bg-white/5 text-white/20 hover:text-white transition-all"
+                            >
+                                <X size={16} />
+                            </button>
 
-                        {/* Progress Bar */}
-                        <div className="absolute bottom-0 left-0 h-[3px] bg-white/10 w-full">
-                            <div className={`h-full animate-[progress_5s_linear_forwards] ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
+                            {/* Progress Bar */}
+                            <div className="absolute bottom-0 left-0 h-[3px] bg-white/10 w-full">
+                                <div className={`h-full animate-[progress_5s_linear_forwards] ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </main>
+                )
+            }
+        </main >
     );
 }

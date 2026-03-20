@@ -14,10 +14,10 @@ export default function Features({ specs }: FeaturesProps) {
                 >
                     <div className="flex-1 w-full text-center lg:text-left">
                         <span className="text-gray-400 font-black text-xs uppercase tracking-[0.3em] mb-4 block">Process {idx + 1}</span>
-                        <h3 className="text-4xl lg:text-5xl font-black mb-6 font-heading tracking-tight text-gray-900 leading-[1.1]">
+                        <h3 className="text-2xl lg:text-5xl font-black mb-6 font-heading tracking-tight text-gray-900 leading-[1.1]">
                             {spec.title}
                         </h3>
-                        <p className="text-xl text-gray-600 leading-relaxed font-medium mb-8">
+                        <p className="text-base md:text-xl text-gray-600 leading-relaxed font-medium mb-8">
                             {spec.info}
                         </p>
                         <div className="w-16 h-1.5 bg-black mx-auto lg:mx-0"></div>

@@ -1,17 +1,18 @@
 'use client';
 
-import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import Carousel from "framer-motion-carousel";
 
-import FAQ from '../../components/FAQ';
-import Reviews from '../../components/Reviews';
-import StickyCart from '../../components/StickyCart';
-import Features from '../../components/Features';
+import FAQ from '../../../components/FAQ';
+import Reviews from '../../../components/Reviews';
+import Features from '../../../components/Features';
 
-import ReviewSummary from '../../components/ReviewSummary';
-import { getProduct, trackVisitor, trackCart, trackCheckout } from '../../lib/api';
+import ReviewSummary from '../../../components/ReviewSummary';
+import { getProduct, getPublicProducts, trackVisitor, trackCart, trackCheckout } from '../../../lib/api';
 import { v4 as uuidv4 } from 'uuid';
-import { Truck, ShieldCheck, RefreshCcw, Headset, Menu, Search, ShoppingBag, Star, Minus, Plus, ChevronDown, ChevronUp, Heart, CheckCircle2, ArrowRight, X, Trash2 } from 'lucide-react';
+import { PackageX, Truck, ShieldCheck, RefreshCcw, Headset, Menu, Search, ShoppingBag, Star, Minus, Plus, ChevronDown, ChevronUp, Heart, CheckCircle2, ArrowRight, X, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface Variant {
@@ -32,16 +33,15 @@ export default function Product() {
 
   const [activeImage, setActiveImage] = useState(0);
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
-  const [mockProducts] = useState([
-    { id: '1', name: 'Smart Trash Can', desc: 'For Bedroom, Living And Room Kitchen', price: 37.56, discount: 10, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-    { id: '2', name: 'Electric Hairball', desc: 'Smart Trimmer Digital Display Fabric Portable', price: 17.79, discount: 20, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-    { id: '3', name: 'Cookit Knife Set', desc: 'Chef Knives with Non-Slip German Stainless Steel', price: 93.90, discount: 40, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-    { id: '4', name: 'Pet Bed Warming Soft', desc: 'Soft Sleeping Bag Cushion Puppy Kennel', price: 61.28, discount: 15, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-    { id: '5', name: 'Smart Kettle Pro', desc: 'Temperature Control with App Integration', price: 549.00, discount: 5, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-    { id: '6', name: 'Wireless Charger Pad', desc: '15W Fast Charging for iPhone and Galaxy', price: 299.00, discount: 12, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-    { id: '7', name: 'Mini Humidifier', desc: 'USB Powered with Night Light Mode', price: 189.50, discount: 25, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-    { id: '8', name: 'Ergonomic Mouse', desc: 'Vertical Wireless Mouse with DPI Control', price: 420.00, discount: 18, img: 'https://res.cloudinary.com/platformtour/image/upload/v1718740858/1623832270576_ncacgm.webp' },
-  ]);
+  const [mockProducts, setMockProducts] = useState<any>(null);
+
+  const [isMobile, setIsMobile] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const trackedIdRef = useRef<string | null>(null);
+
+  const params = useParams();
+  const id = params?.id as string; // This grabs "agzo-fukqib5peeq" from the URL
 
   useEffect(() => {
     let sid = localStorage.getItem('session_id');
@@ -51,34 +51,71 @@ export default function Product() {
     }
     setSessionId(sid);
 
-    getProduct('agzo-fukqib5peeq')
-      .then(data => {
-        setProduct(data);
+    // If there is no ID in the URL, wait.
+    if (!id) return;
+
+    // USE THE DYNAMIC ID HERE 👇
+    // USE PROMISE.ALL TO FETCH BOTH AT THE SAME TIME 👇
+    Promise.all([
+      getProduct(id), getPublicProducts(8)
+    ]).then(([data, allProducts]) => {
+      setProduct(data);
+
+      // 👇 THE FIX: Check the sticky note before tracking! 👇
+      if (trackedIdRef.current !== id) {
         trackVisitor(data.product_id, sid!);
+        trackedIdRef.current = id; // Update the sticky note so it doesn't fire again
+      }
+      // 👆 END FIX 👆
 
-        // Dynamically initialize selectedVariant if productVariants or API data exists
-        // Here we use the local productVariants as requested
-        const initialVariants = data.variants.map((v: Variant) => {
-          const key = Object.keys(v)[0];
-          return { [key]: (v as any)[key][0] };
-        });
-        setSelectedVariant(initialVariants);
+      //KEEPING PRODUCT_ID TO LOCAL STORAGE TO USE IT ON HOMEPAGE
+      localStorage.removeItem('local_product_id');
+      localStorage.setItem('local_product_id', data.product_id);
 
-        // Initialize cart count from localStorage
-        const existingCart = localStorage.getItem('Cart_order');
-        if (existingCart) {
-          try {
-            const items = JSON.parse(existingCart);
-            setCartCount(items.length);
-            setCartItems(items);
-          } catch (e) {
-            console.error('Error parsing cart:', e);
-          }
+
+      // Dynamically initialize selectedVariant if productVariants or API data exists
+      // Here we use the local productVariants as requested
+      const initialVariants = data.variants.map((v: Variant) => {
+        const key = Object.keys(v)[0];
+        return { [key]: (v as any)[key][0] };
+      });
+      setSelectedVariant(initialVariants);
+
+
+      // 2. Handle the public products list
+      // Assuming you have a state called setMockProducts or setRelatedProducts
+      setMockProducts(allProducts);
+
+      // Initialize cart count from localStorage
+      const existingCart = localStorage.getItem('Cart_order');
+      if (existingCart) {
+        try {
+          const items = JSON.parse(existingCart);
+          setCartCount(items.length);
+          setCartItems(items);
+        } catch (e) {
+          console.error('Error parsing cart:', e);
         }
-      })
+      }
+    })
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
-  }, []);
+
+    // Function to check the screen width
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 750);
+    };
+
+    // Run it once immediately on mount to get the initial size
+    handleResize();
+
+    // Listen for window resizes
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup the listener when the component unmounts
+    return () => window.removeEventListener('resize', handleResize);
+
+  }, [id]); // Tell useEffect to re-run if the 'id' in the URL changes
 
 
   const handleVariant = (Variantname: string, Variantselected: string) => {
@@ -273,9 +310,62 @@ export default function Product() {
 
 
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-black bg-white"><div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-black"></div></div>;
-  if (!product) return <div className="min-h-screen flex items-center justify-center">Product not found. Ensure backend is running and seeded.</div>;
+  if (loading) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+      <div className="relative flex flex-col items-center">
+        <h1 className="text-3xl md:text-5xl font-black tracking-[0.5em] text-black animate-pulse uppercase">
+          ECOESTRAS
+        </h1>
+        <div className="mt-4 w-24 h-[1px] bg-black/10 relative overflow-hidden">
+          <div className="absolute inset-0 bg-black animate-shimmer" />
+        </div>
+      </div>
+    </div>
+  );
 
+
+  if (!product) { // or whatever your condition is for not finding it
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4">
+        <div className="max-w-md w-full text-center space-y-8">
+          {/* Minimalist Icon */}
+          <div className="flex justify-center">
+            <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100">
+              <PackageX strokeWidth={1.5} className="w-10 h-10 text-gray-400" />
+            </div>
+          </div>
+
+          {/* Premium Typography Heading */}
+          <div className="space-y-3">
+            <h1 className="text-2xl font-black text-black uppercase tracking-[0.2em]">
+              Connection Interrupted
+            </h1>
+
+            {/* Customer-friendly explanation */}
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed px-6">
+           We temporarily lost your connection. This usually resolves quickly upon refreshing the secure connection. </p>
+          </div>
+
+          {/* Sleek Call-to-Action Button */}
+          <div className="pt-6">
+            <Link
+              href={`/product/${id}`} // Or href="/" to send them to the home page
+              className="inline-flex items-center justify-center px-10 py-4 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full hover:bg-gray-800 transition-all shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]"
+            >
+               Retry Connection
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
+
+
+  
+                     	
+                    
   return (
     <main className="min-h-screen bg-white font-sans selection:bg-black selection:text-white uppercase tracking-tight overflow-x-hidden">
       {/* Announcement Bar */}
@@ -336,7 +426,45 @@ export default function Product() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
 
           {/* Left Column: Gallery */}
-          <div className="space-y-6">
+          {/* Responsive Layout Check */}
+
+          {isMobile ? (
+            <div className="w-full relative pb-8">
+              {/* Mobile Carousel */}
+              <Carousel
+                autoPlay={false}
+                renderArrowLeft={() => null}
+                renderArrowRight={() => null}
+                renderDots={({ activeIndex: currentIdx }) => {
+                  // The Safe Hack: Use setTimeout to update the state AFTER the render cycle finishes
+                  if (currentIdx !== activeIndex) {
+                    setTimeout(() => setActiveIndex(currentIdx), 0);
+                  }
+                  return null; // Hide the default inside dots
+                }}
+              >
+                {product.product_images.map((img: string, i: number) => (
+                  <img
+                    key={i}
+                    src={img}
+                    alt={`${product.product_name} image ${i + 1}`}
+                    className="w-full h-auto object-cover rounded-[15px]"
+                  />
+                ))}
+              </Carousel>
+
+              {/* Custom Dots OUTSIDE the Carousel (Tailwind Version) */}
+              <div className="flex justify-center items-center gap-3 w-full h-[30px] mt-4">
+                {product.product_images.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-[10px] rounded-full bg-black/80 transition-all duration-700 ease-in-out ${activeIndex === i ? 'w-[25px]' : 'w-[10px]'
+                      }`}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (<div className="space-y-6">
             <div className="aspect-square rounded-[2rem] overflow-hidden bg-gray-50 border border-gray-100 relative group shadow-card">
               <img
                 src={product.product_images[activeImage]}
@@ -361,7 +489,7 @@ export default function Product() {
                 </button>
               ))}
             </div>
-          </div>
+          </div>)}
 
           {/* Right Column: Info */}
           <div className="space-y-8">
@@ -387,14 +515,14 @@ export default function Product() {
               <span className="text-3xl font-black text-black italic">
                 R{product.pricing.selling_price_zar.toFixed(2)}
               </span>
-              {product.pricing.compare_at_price_zar > product.pricing.selling_price_zar && (
+              {product.pricing.original_price_zar > product.pricing.selling_price_zar && (
                 <div className="flex items-center gap-3">
                   <span className="text-xl font-bold text-gray-300 line-through">
-                    R{product.pricing.compare_at_price_zar.toFixed(2)}
+                    R{product.pricing.original_price_zar.toFixed(2)}
                   </span>
                   <span className="bg-black text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter flex items-center gap-1">
                     <CheckCircle2 size={10} />
-                    Save {Math.round(((product.pricing.compare_at_price_zar - product.pricing.selling_price_zar) / product.pricing.compare_at_price_zar) * 100)}%
+                    Save {Math.round(((product.pricing.original_price_zar - product.pricing.selling_price_zar) / product.pricing.original_price_zar) * 100)}%
                   </span>
                 </div>
               )}
@@ -519,7 +647,7 @@ export default function Product() {
         Budget Friendly Shopping
       </div>
 
-      <section className="bg-white px-2 md:px-10 pb-4 rounded-t-[3rem] relative z-30 -mt-8">
+      <section className={`bg-white px-2 md:px-10 pb-4 ${isMobile ? 'rounded-t-[11px]' : 'rounded-t-[3rem]'} relative z-30 -mt-8`}>
         <div className="max-w-7xl mx-auto pt-10">
           <div className="flex items-center justify-between mb-8 px-4">
             <div>
@@ -534,13 +662,13 @@ export default function Product() {
 
           <div className="flex overflow-x-auto gap-4 px-4 no-scrollbar pb-8 scroll-smooth">
             {mockProducts.map((p) => (
-              <div key={p.id} className="min-w-[180px] md:min-w-[220px] group cursor-pointer">
-                <Link href={`/product`}>
+              <div key={p._id} className="min-w-[180px] md:min-w-[220px] group cursor-pointer">
+                <Link href={`/product/${p.product_id}`}>
                   <div className="aspect-square rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden relative mb-4">
                     <img
-                      src={p.img}
-                      alt={p.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      src={p.product_images[0]}
+                      alt={p.product_name}
+                      className="w-full h-[180px] md:h-[220px] object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                     <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-sm">
                       <Heart size={14} />
@@ -548,18 +676,20 @@ export default function Product() {
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-[11px] font-black uppercase text-gray-900 truncate">
-                      {p.name}
+                      {p.product_name}
                     </h3>
-                    <p className="text-[9px] font-bold text-gray-400 line-clamp-2 leading-tight h-6 text-left">
-                      {p.desc}
+                    <p className="text-[9px] font-bold text-gray-400 line-clamp-2 leading-tight h-6">
+                      {p.description_specifications[0].title}
                     </p>
                     <div className="flex items-center gap-2 pt-2">
-                      <p className="text-sm font-black text-gray-900 italic text-left">R{p.price.toFixed(2)}</p>
-                      <div className="px-2 py-0.5 rounded-full border border-gray-200 text-[8px] font-black text-gray-500">
-                        -{p.discount}%
-                      </div>
+                      <p className="text-sm font-black text-gray-900 italic">R{p.pricing.selling_price_zar}</p>
+
+                      <div className={`px-2 py-0.5 rounded-full border border-gray-200 text-[8px] font-black text-gray-500 ${p.pricing.original_price_zar > p.pricing.selling_price_zar ? '' : 'invisible'}`}>
+                        {p.pricing.original_price_zar > p.pricing.selling_price_zar ? `-${Math.round(((p.pricing.original_price_zar - p.pricing.selling_price_zar) / p.pricing.original_price_zar) * 100)}%`
+                          : '0%'}</div>
+
                     </div>
-                    <p className="text-[8px] font-bold text-gray-300 uppercase italic text-left">Estimated</p>
+                    <p className="text-[8px] font-bold text-gray-300 uppercase italic">Estimated</p>
                   </div>
                 </Link>
               </div>

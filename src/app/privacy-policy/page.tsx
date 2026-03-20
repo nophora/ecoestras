@@ -28,7 +28,7 @@ export default function PrivacyPolicy() {
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest mb-8">
                         <Shield size={14} /> Correct as of March 2026
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-black text-black mb-8 font-heading tracking-tighter leading-none uppercase">
+                    <h1 className="text-4xl md:text-7xl font-black text-black mb-8 font-heading tracking-tighter leading-none uppercase">
                         Our Commitment <br />
                         <span className="text-gray-400">To Your Privacy.</span>
                     </h1>
@@ -58,7 +58,7 @@ export default function PrivacyPolicy() {
                                         <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center text-white">
                                             <FileText size={24} />
                                         </div>
-                                        <h3 className="text-2xl font-black text-black uppercase tracking-tighter">Collecting Personal Information</h3>
+                                        <h3 className="text-1xl md:text-2xl font-black text-black uppercase tracking-tighter">Collecting Personal Information</h3>
                                     </div>
                                     <p className="text-gray-600 leading-relaxed mb-6">
                                         When you visit the Site, we collect certain information about your device, your interaction with the Site, and information necessary to process your purchases. We refer to any information that can uniquely identify an individual as “Personal Information”. See the list below for more information about what Personal Information we collect and why.
@@ -130,7 +130,7 @@ export default function PrivacyPolicy() {
                                     </p>
                                     <a
                                         href="mailto:support@ecoestras.co.za"
-                                        className="text-2xl font-black text-black hover:text-gray-600 transition-colors uppercase tracking-tight"
+                                        className="text-1xl md:text-2xl font-black text-black hover:text-gray-600 transition-colors uppercase tracking-tight"
                                     >
                                         support@ecoestras.co.za
                                     </a>

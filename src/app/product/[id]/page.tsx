@@ -343,7 +343,7 @@ export default function Product() {
 
             {/* Customer-friendly explanation */}
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed px-6">
-           We temporarily lost your connection. This usually resolves quickly upon refreshing the secure connection. </p>
+              We temporarily lost your connection. This usually resolves quickly upon refreshing the secure connection. </p>
           </div>
 
           {/* Sleek Call-to-Action Button */}
@@ -352,7 +352,7 @@ export default function Product() {
               href={`/product/${id}`} // Or href="/" to send them to the home page
               className="inline-flex items-center justify-center px-10 py-4 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full hover:bg-gray-800 transition-all shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]"
             >
-               Retry Connection
+              Retry Connection
             </Link>
           </div>
         </div>
@@ -363,9 +363,9 @@ export default function Product() {
 
 
 
-  
-                     	
-                    
+
+
+
   return (
     <main className="min-h-screen bg-white font-sans selection:bg-black selection:text-white uppercase tracking-tight overflow-x-hidden">
       {/* Announcement Bar */}
@@ -433,6 +433,8 @@ export default function Product() {
               {/* Mobile Carousel */}
               <Carousel
                 autoPlay={false}
+                interval={3000} // <-- Add this
+                loop={true}     // <-- Add this
                 renderArrowLeft={() => null}
                 renderArrowRight={() => null}
                 renderDots={({ activeIndex: currentIdx }) => {
@@ -455,7 +457,7 @@ export default function Product() {
 
               {/* Custom Dots OUTSIDE the Carousel (Tailwind Version) */}
               <div className="flex justify-center items-center gap-3 w-full h-[30px] mt-4">
-                {product.product_images.map((_, i) => (
+                {product.product_images.map((_: any, i: number) => (
                   <div
                     key={i}
                     className={`h-[10px] rounded-full bg-black/80 transition-all duration-700 ease-in-out ${activeIndex === i ? 'w-[25px]' : 'w-[10px]'
@@ -661,7 +663,7 @@ export default function Product() {
           </div>
 
           <div className="flex overflow-x-auto gap-4 px-4 no-scrollbar pb-8 scroll-smooth">
-            {mockProducts.map((p) => (
+            {mockProducts.map((p: any) => (
               <div key={p._id} className="min-w-[180px] md:min-w-[220px] group cursor-pointer">
                 <Link href={`/product/${p.product_id}`}>
                   <div className="aspect-square rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden relative mb-4">

@@ -291,7 +291,7 @@ export default function Home() {
                     </div>
 
                     <div className="flex overflow-x-auto gap-4 px-4 no-scrollbar pb-8 scroll-smooth">
-                        {mockProducts.slice(0, 8).map((p) => (
+                        {mockProducts.slice(0, 8).map((p: any) => (
                             <div key={p._id} className="min-w-[180px] md:min-w-[220px] group cursor-pointer">
                                 <Link href={`/product/${p.product_id}`}>
                                     <div className="aspect-square rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden relative mb-4">
@@ -387,7 +387,7 @@ export default function Home() {
                         </div>
 
                         <div className="flex overflow-x-auto gap-4 px-4 no-scrollbar pb-8 scroll-smooth">
-                            {mockProducts.reverse().slice(0, 8).map((p) => (
+                            {mockProducts.reverse().slice(0, 8).map((p: any) => (
                                 <div key={p._id} className="min-w-[180px] md:min-w-[220px] group cursor-pointer">
                                     <Link href={`/product/${p.product_id}`}>
                                         <div className="aspect-square rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden relative mb-4">

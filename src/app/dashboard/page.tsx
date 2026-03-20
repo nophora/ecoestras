@@ -938,10 +938,11 @@ Total Amount: R${order.total_amount}
                     let processedVal = val;
 
                     if (typeof val === 'string') {
-                        // If it's a string with commas, split it into an array
-                        processedVal = val.includes(',')
-                            ? val.split(',').map(v => v.trim()).filter(Boolean)
-                            : [val.trim()].filter(Boolean); // If it's just one word, make it an array of one
+                        // Force TypeScript to treat this as a string safely
+                        const strVal = String(val);
+                        processedVal = strVal.includes(',')
+                            ? strVal.split(',').map(v => v.trim()).filter(Boolean)
+                            : [strVal.trim()].filter(Boolean);
                     }
 
                     // 4. Return the single object for your flat array

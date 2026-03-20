@@ -267,7 +267,7 @@ export default function DashboardPage() {
     };
 
     // Sessions statistics aggregation (Calculates for a specific range)
-    const getStatsForRange = (range: 'today' | '7d' | '30d' | '1y') => {
+    const getStatsForRange = (range: 'today' | '7d' | '30d' | '3m' | '1y') => {
         let totalVisitors = 0;
         let totalCart = 0;
         let totalCheckout = 0;

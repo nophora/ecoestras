@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation'; //,
 import { getHomepage, getPublicProducts, trackCheckout } from '../lib/api';
-import { Menu, Search, ShoppingBag, ArrowRight, Heart, Star, X, Trash2 } from 'lucide-react';
+import { Menu, Search, ShoppingBag, ArrowRight, Heart, Star, X, Trash2, FileText, ShieldCheck, RefreshCcw, Headset } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function Home() {
@@ -16,6 +16,7 @@ export default function Home() {
     const [sessionId, setSessionId] = useState('');
     const [cartCount, setCartCount] = useState(0);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false); // <-- ADD THIS LINE
     const [cartItems, setCartItems] = useState<any[]>([]);
 
     const [isMobile, setIsMobile] = useState(false);
@@ -181,6 +182,8 @@ export default function Home() {
         }
     };
 
+
+
     return (
         <main className="min-h-screen bg-white font-sans selection:bg-black selection:text-white overflow-x-hidden">
             {/* Announcement Bar */}
@@ -205,7 +208,7 @@ export default function Home() {
             {/* Header - Fixed below Announcement Bar */}
             <header className="bg-black/90 backdrop-blur-md text-white py-4 px-10 flex items-center justify-between fixed top-[30px] left-0 w-full z-[99] border-b border-white/5">
                 <div className="flex items-center gap-6">
-                    <button className="hover:scale-110 transition-transform active:scale-95">
+                    <button onClick={() => setIsMenuOpen(true)} className="hover:scale-110 transition-transform active:scale-95">
                         <Menu size={20} strokeWidth={2} />
                     </button>
                     <button className="hover:scale-110 transition-transform active:scale-95">
@@ -576,6 +579,56 @@ export default function Home() {
                     </div>
                 </div>
             </footer>
+
+            {/* Menu Drawer */}
+            <div className={`fixed inset-0 z-[1000] transition-opacity duration-500 ${isMenuOpen ? 'visible opacity-100' : 'invisible opacity-0'}`}>
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
+                <div className={`absolute left-0 top-0 h-full w-full max-w-[80vw] md:max-w-sm bg-white shadow-2xl transition-transform duration-500 transform ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
+
+                    {/* Drawer Header */}
+                    <div className="p-8 border-b border-gray-100 flex items-center justify-between">
+                        <h2 className="text-xl font-black italic uppercase tracking-widest text-black">Menu</h2>
+                        <button onClick={() => setIsMenuOpen(false)} className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-black hover:bg-gray-100 transition-colors">
+                            <X size={20} />
+                        </button>
+                    </div>
+
+                    {/* Drawer Links */}
+                    <div className="flex-1 overflow-y-auto p-6 space-y-2 no-scrollbar">
+                        <div className="flex flex-col space-y-4">
+                            {[
+                                { label: 'Terms Of Service', href: '/terms-of-service', icon: FileText },
+                                { label: 'Privacy Policy', href: '/privacy-policy', icon: ShieldCheck },
+                                { label: 'Refund Policy', href: '/refund-policy', icon: RefreshCcw },
+                                { label: 'Assistance', href: '/assistance', icon: Headset }
+                            ].map((link, i) => (
+                                <Link
+                                    key={i}
+                                    href={link.href}
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="flex items-center gap-4 group p-4 rounded-2xl hover:bg-gray-50 transition-all"
+                                >
+                                    <div className="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center text-black shadow-sm group-hover:scale-110 group-hover:bg-black group-hover:text-white transition-all">
+                                        <link.icon size={20} strokeWidth={2} />
+                                    </div>
+                                    <span className="text-xs font-black uppercase tracking-[0.2em] text-gray-900 group-hover:text-black">
+                                        {link.label}
+                                    </span>
+                                    <ArrowRight size={14} className="ml-auto opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all text-gray-400" />
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Drawer Footer */}
+                    <div className="p-8 bg-gray-50/50 border-t border-gray-100 text-center">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                            &copy; 2026 ECOESTRAS
+                        </p>
+                    </div>
+                </div>
+            </div>
+
 
             {/* Cart Drawer */}
             <div className={`fixed inset-0 z-[1000] transition-opacity duration-500 ${isCartOpen ? 'visible opacity-100' : 'invisible opacity-0'}`}>

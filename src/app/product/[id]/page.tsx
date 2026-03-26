@@ -185,6 +185,12 @@ export default function Product() {
         console.error('[product] Tracking failed:', err);
       }
 
+      // --- ADD THESE 3 LINES ---
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'InitiateCheckout');
+      }
+      // -------------------------
+
       // Redirect to checkout
       router.push('/checkout');
     }
@@ -231,6 +237,18 @@ export default function Product() {
         // Track analytics
         console.log('[product] Sending trackCart...');
         await trackCart(product.product_id, sessionId);
+
+
+        // --- META PIXEL ADD TO CART TRACKER ---
+        if (typeof window !== 'undefined' && (window as any).fbq) {
+          (window as any).fbq('track', 'AddToCart', {
+            currency: 'ZAR',
+            value: selected_product.pricing.customer_totalprice
+          });
+          console.log(`🛒 Meta Pixel: AddToCart Tracked! Value: R${selected_product.pricing.customer_totalprice}`);
+        }
+        // --------------------------------------
+
       } catch (err) {
         console.error('[product] AddToCart failed:', err);
       }
@@ -294,6 +312,14 @@ export default function Product() {
         // Track analytics
         console.log('[product] Sending trackCheckout...');
         await trackCheckout(product.product_id, sessionId);
+
+
+
+        // --- ADD THESE 3 LINES ---
+        if (typeof window !== 'undefined' && (window as any).fbq) {
+          (window as any).fbq('track', 'InitiateCheckout');
+        }
+        // -------------------------
 
         // Redirect to checkout
         router.push('/checkout');

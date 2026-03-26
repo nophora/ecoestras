@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Outfit, Caveat } from 'next/font/google';
 import './globals.css';
+import MetaPixel from '@/components/MetaPixel'; // (Adjust path if needed)
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
@@ -10,11 +11,11 @@ export const metadata = {
   title: 'EcoEstras | Premium Quality, Sustainably Sourced',
   description: 'Experience the intersection of luxury and sustainability. EcoEstras offers curated, high-quality products designed for the modern South African lifestyle. Fast nationwide delivery and secure PayFast checkout.',
   keywords: [
-    'EcoEstras', 
-    'online shopping South Africa', 
-    'premium lifestyle products', 
-    'sustainable brands SA', 
-    'luxury essentials Cape Town', 
+    'EcoEstras',
+    'online shopping South Africa',
+    'premium lifestyle products',
+    'sustainable brands SA',
+    'luxury essentials Cape Town',
     'EcoEstras store',
     'eco-friendly products South Africa',
     'buy quality goods online SA'
@@ -63,6 +64,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${outfit.variable} ${caveat.variable} font-sans bg-gray-50 text-gray-900`}>
+        <MetaPixel />
         {children}
       </body>
     </html>

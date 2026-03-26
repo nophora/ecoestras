@@ -14,10 +14,44 @@ function SuccessContent() {
         const id = searchParams.get('track_id');
         if (id) {
             setTrackId(id);
+
+
+            // 1. GRAB THE ORDER DATA BEFORE WE DELETE IT
+            const pendingOrderStr = localStorage.getItem('pending_order');
+            let orderTotal = 0.00;
+
+            if (pendingOrderStr) {
+                try {
+                    const pendingOrder = JSON.parse(pendingOrderStr);
+                    // Calculate total exactly like the Checkout page
+                    orderTotal = pendingOrder.cart_bucket?.reduce((sum: number, item: any) => {
+                        return sum + (item.pricing?.customer_totalprice || 0);
+                    }, 0) || 0;
+                } catch (e) {
+                    console.error('Failed to parse order for Meta Pixel:', e);
+                }
+            }
+
+
             // Clear Carter after Successfull Payment
             localStorage.removeItem('Cart_order');
             localStorage.removeItem('pending_order');
             localStorage.removeItem('session_id');
+
+            // --- META PIXEL PURCHASE TRACKER ---
+            // Fire the Meta Purchase Event with a small timeout to ensure the main script loaded
+            setTimeout(() => {
+                if (typeof window !== 'undefined' && (window as any).fbq) {
+                    // Stripped down to track the EVENTS and ROADS itself
+                    (window as any).fbq('track', 'Purchase', {
+                        currency: 'ZAR',
+                        value: orderTotal // Dynamic value passed here!
+                    });
+                    console.log(`💰 Meta Pixel: Purchase Tracked! Value: R${orderTotal}`);
+                }
+            }, 1000);
+            // -----------------------------------
+
         }
     }, [searchParams]);
 

@@ -151,6 +151,12 @@ export default function Home() {
                 console.log('[home] Sending trackCheckout...');
                 await trackCheckout(local_product_id, sessionId);
 
+                // --- ADD THESE 3 LINES ---
+                if (typeof window !== 'undefined' && (window as any).fbq) {
+                    (window as any).fbq('track', 'InitiateCheckout');
+                }
+                // -------------------------
+
                 router.push('/checkout');
             } catch (err) {
                 console.error('[home] Checkout failed:', err);

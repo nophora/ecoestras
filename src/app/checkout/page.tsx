@@ -92,12 +92,12 @@ export default function CheckoutPage() {
                     });
 
                     document.body.appendChild(form);
-                    localStorage.removeItem('pending_order');
+                    // REMOVED: localStorage.removeItem('pending_order');
                     form.submit();
                 } else {
 
                     // Fallback to manual success if no PayFast data (shouldn't happen)
-                    localStorage.removeItem('pending_order');
+                    // REMOVED: localStorage.removeItem('pending_order');
                     setIsSuccess(true);
                 }
             } else {

@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ShieldCheck, Truck, ArrowRight, Package, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
@@ -9,10 +9,15 @@ import Image from 'next/image';
 function SuccessContent() {
     const searchParams = useSearchParams();
     const [trackId, setTrackId] = useState<string | null>(null);
+    const hasTracked = useRef(false); // <-- The Sticky Note Lock
 
     useEffect(() => {
         const id = searchParams.get('track_id');
-        if (id) {
+
+        // Only run if we have an ID AND we haven't tracked it yet
+        if (id && !hasTracked.current) {
+
+            hasTracked.current = true; // Lock it instantly!
             setTrackId(id);
 
 
@@ -39,15 +44,21 @@ function SuccessContent() {
             localStorage.removeItem('session_id');
 
             // --- META PIXEL PURCHASE TRACKER ---
-            // Fire the Meta Purchase Event with a small timeout to ensure the main script loaded
+            // 2. Fire the Meta Pixel Tracker
             setTimeout(() => {
                 if (typeof window !== 'undefined' && (window as any).fbq) {
-                    // Stripped down to track the EVENTS and ROADS itself
-                    (window as any).fbq('track', 'Purchase', {
-                        currency: 'ZAR',
-                        value: orderTotal // Dynamic value passed here!
-                    });
-                    console.log(`💰 Meta Pixel: Purchase Tracked! Value: R${orderTotal}`);
+                    if (orderTotal > 0) {
+                        (window as any).fbq('track', 'Purchase', {
+                            currency: 'ZAR',
+                            value: orderTotal
+                        });
+                        console.log(`💰 Meta Pixel: Purchase Tracked! Value: R${orderTotal}`);
+                    } else {
+                        // Safety net: If local storage is totally wiped by a strict mobile browser, 
+                        // we still send the Purchase event without a 0 value so it doesn't break ROAS.
+                        (window as any).fbq('track', 'Purchase');
+                        console.log(`💰 Meta Pixel: Purchase Tracked! (Value hidden due to browser privacy)`);
+                    }
                 }
             }, 1000);
             // -----------------------------------

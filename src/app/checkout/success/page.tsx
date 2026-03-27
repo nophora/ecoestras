@@ -11,6 +11,8 @@ function SuccessContent() {
     const [trackId, setTrackId] = useState<string | null>(null);
     const hasTracked = useRef(false); // <-- The Sticky Note Lock
 
+    //const trackIds = new URLSearchParams(window.location.search).get('custom_str1');
+
     useEffect(() => {
         const id = searchParams.get('track_id');
 

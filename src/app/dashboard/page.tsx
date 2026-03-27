@@ -715,7 +715,7 @@ export default function DashboardPage() {
         if (activeFilter === 'all') return true;
         if (activeFilter === 'paid') return order.status.payment === 'PAID';
         if (activeFilter === 'unpaid') return order.status.payment === 'PENDING';
-        if (activeFilter === 'unfulfilled') return order.status.fulfillment === 'UNFULFILLED';
+        if (activeFilter === 'unfulfilled') return order.status.fulfillment === 'UNFULFILLED' && order.status.payment === "PAID";
         if (activeFilter === 'done') return order.status.fulfillment === 'FULFILLED';
         return true;
     });
@@ -1213,7 +1213,7 @@ Total Amount: R${order.total_amount}
                                 </button>
                             )) : [
                                 { id: 'all', label: 'All' },
-                                { id: 'unfulfilled', label: `(${orders.filter(e => e.status.fulfillment === "UNFULFILLED").length})Pending` },
+                                { id: 'unfulfilled', label: `(${orders.filter(e => e.status.fulfillment === "UNFULFILLED" && e.status.payment === "PAID").length})Pending` },
                                 { id: 'done', label: 'Fulfilled' },
                                 { id: 'paid', label: 'Paid' },
                                 { id: 'unpaid', label: 'Unpaid' },

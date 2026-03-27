@@ -185,6 +185,14 @@ export async function createProduct(productData: any) {
     return await res.json();
 }
 
+export async function resetProductStats(id: string) {
+    const res = await authFetch(`${API_URL}/products/${id}/reset-stats`, {
+        method: 'PATCH'
+    });
+    if (!res.ok) throw new Error('Failed to reset product stats');
+    return await res.json();
+}
+
 export async function getHomepage() {
     const res = await fetch(`${API_URL}/homepage`, { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to fetch homepage settings');

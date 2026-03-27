@@ -40,9 +40,10 @@ import {
     Target,
     Zap as Flash,
     ShieldCheck,
-    Loader2
+    Loader2,
+    RefreshCcw
 } from 'lucide-react';
-import { getAssistanceRequests, markAssistanceDone, getOrders, markOrderFulfilled, markOrderPaid, deleteOrder, getAllProducts, toggleProductPause, deleteProduct, createProduct, getMe, logout, getHomepage, updateHomepage } from '@/lib/api';
+import { getAssistanceRequests, markAssistanceDone, getOrders, markOrderFulfilled, markOrderPaid, deleteOrder, getAllProducts, toggleProductPause, deleteProduct, createProduct, getMe, logout, getHomepage, updateHomepage, resetProductStats } from '@/lib/api';
 
 type Order = {
     _id: string;
@@ -140,6 +141,7 @@ export default function DashboardPage() {
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isProductPauseModalOpen, setIsProductPauseModalOpen] = useState(false);
     const [productToToggle, setProductToToggle] = useState<string | null>(null);
+    const [resetSuccessId, setResetSuccessId] = useState<string | null>(null);
 
     const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
     const [newProductForm, setNewProductForm] = useState({
@@ -967,6 +969,32 @@ Total Amount: R${order.total_amount}
         }
     };
 
+
+    // Add the Reset Function: Show the green checkmark on this specific product
+
+    const handleResetStats = async (id: string) => {
+        try {
+            await resetProductStats(id);
+            // Show the green checkmark on this specific product
+            setResetSuccessId(id);
+            // Hide it after 2 seconds
+            setTimeout(() => {
+                setResetSuccessId(null);
+            }, 2000);
+
+            // 1. Refresh the screen (Change 'fetchData' to whatever your load function is named)
+            fetchProducts();
+
+            // 2. Show your custom success notification
+            setNotification({ type: 'success', message: 'Analytics reset to zero' });
+        } catch (error) {
+            console.error('Failed to reset stats:', error);
+            // Show your custom error notification
+            setNotification({ type: 'error', message: 'Failed to reset stats' });
+        }
+    };
+
+
     const confirmDelete = async () => {
         if (deleteModal.orderId) {
             try {
@@ -1622,12 +1650,21 @@ Total Amount: R${order.total_amount}
                                                     <span className="text-[8px] font-black bg-gray-100 text-gray-500 px-2 py-1 rounded-full uppercase tracking-widest border border-gray-200">
                                                         {product.store_id}
                                                     </span>
-                                                    <button
-                                                        onClick={() => handleDeleteProduct(product._id)}
-                                                        className="p-2 rounded-full hover:bg-red-50 text-red-400 transition-colors"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
+                                                    <div className="flex items-center gap-3">
+                                                        <button
+                                                            onClick={() => handleResetStats(product._id)}
+                                                            className={`transition-colors hover:scale-110 ${resetSuccessId === product._id ? 'text-green-500' : 'text-red-400 hover:text-red-600'}`}
+                                                            title="Reset Analytics"
+                                                        >
+                                                            {resetSuccessId === product._id ? <CheckCircle2 size={16} /> : <RefreshCcw size={16} />}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteProduct(product._id)}
+                                                            className="p-2 rounded-full hover:bg-red-50 text-red-400 transition-colors"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 <div className="flex items-center justify-between mb-4">
                                                     <div>

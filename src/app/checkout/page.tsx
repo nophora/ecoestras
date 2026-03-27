@@ -42,13 +42,30 @@ export default function CheckoutPage() {
         e.preventDefault();
 
         // Basic Validation
+        // 1. Check for empty fields
         if (!formData.name || !formData.email || !formData.phone || !formData.address || !formData.suburb) {
-            setValidationError('Please fill in all required shipping fields (including Suburb)');
-
-            // Auto-scroll to error
+            setValidationError('Please fill in all required shipping fields');
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
+
+        // 2. NEW: Robust Email Validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            setValidationError('Please enter a valid email address (e.g. name@example.com)');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
+        // 3. Optional: Phone Validation (Ensures it's at least 10 digits)
+        if (formData.phone.replace(/\s/g, '').length < 10) {
+            setValidationError('Please enter a valid 10-digit phone number');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
+        setValidationError(null);
+        setIsSubmitting(true);
 
         setValidationError(null);
         setIsSubmitting(true);

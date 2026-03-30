@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+// THIS IS THE MAGIC LINE that stops Vercel from caching the response
+export const dynamic = 'force-dynamic';
+
 const API_URL = 'https://ecoestras-api.onrender.com/api';
 
 export async function GET() {

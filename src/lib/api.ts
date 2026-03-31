@@ -1,4 +1,4 @@
-const API_URL = 'https://ecoestras-api.onrender.com/api';
+const API_URL = 'https://ecoestras-backend.vercel.app/api';
 
 // Helper to get token from localStorage
 const getAuthToken = () => {

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 // THIS IS THE MAGIC LINE that stops Vercel from caching the response
 export const dynamic = 'force-dynamic';
 
-const API_URL = 'https://ecoestras-api.onrender.com/api';
+const API_URL = 'https://ecoestras-backend.vercel.app/api';
 
 
 // Helper for generating random footprints (e.g. q7ss-29x9spq21m)

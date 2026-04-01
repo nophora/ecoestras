@@ -43,6 +43,7 @@ function SuccessContent() {
             localStorage.removeItem('Cart_order');
             localStorage.removeItem('pending_order');
             localStorage.removeItem('session_id');
+            localStorage.removeItem('ecoestras_checkout');
 
             // --- META PIXEL PURCHASE TRACKER ---
             // 2. Fire the Meta Pixel Tracker

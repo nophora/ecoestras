@@ -34,6 +34,22 @@ export default function CheckoutPage() {
         setLoading(false);
     }, [router]);
 
+
+    // --- ADD THIS NEW BLOCK HERE ---
+    // Auto-fill form data if the user returns from a failed PayFast payment
+    useEffect(() => {
+        const savedFormData = localStorage.getItem('ecoestras_checkout');
+        if (savedFormData) {
+            try {
+                // Parse the JSON string back into an object and set it into state
+                setFormData(JSON.parse(savedFormData));
+            } catch (e) {
+                console.error("Could not load saved checkout data", e);
+            }
+        }
+    }, []);
+    // -------------------------------
+
     const cartItems = order?.cart_bucket || [];
     const totalItems = cartItems.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
     const subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.pricing?.customer_totalprice || 0), 0);
@@ -69,6 +85,12 @@ export default function CheckoutPage() {
 
         setValidationError(null);
         setIsSubmitting(true);
+
+
+        // --- ADD THIS EXACT LINE HERE ---
+        // Save the completed form data before sending to backend/PayFast
+        localStorage.setItem('ecoestras_checkout', JSON.stringify(formData));
+        // --------------------------------
 
         const totalAmount = order?.cart_bucket?.reduce((sum: number, item: any) => {
             return sum + (item.pricing?.customer_totalprice || 0);

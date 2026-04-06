@@ -314,8 +314,11 @@ export default function CheckoutPage() {
                                     </div>
                                 </div>
 
-                                {/* RADIO BUTTON: Stays locked to the top right on mobile, centers on desktop */}
-                                <div className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 rounded-full border-[3px] md:border-4 border-black bg-white shadow-inner mt-2 md:mt-0"></div>
+                                {/* RADIO BUTTON (PERMANENTLY SELECTED): Stays locked to the top right on mobile, centers on desktop */}
+                                <div className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 rounded-full border-[3px] md:border-4 border-black bg-white shadow-inner mt-2 md:mt-0 flex items-center justify-center">
+                                    {/* The solid black dot inside */}
+                                    <div className="w-2.5 h-2.5 md:w-3 md:h-3 bg-black rounded-full"></div>
+                                </div>
                             </div>
 
                             <p className="mt-6 md:mt-8 text-[12px] md:text-sm text-gray-500 font-medium leading-relaxed">

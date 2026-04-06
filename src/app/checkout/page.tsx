@@ -18,8 +18,10 @@ export default function CheckoutPage() {
         email: '',
         phone: '',
         address: '',
+        apartment: '', // NEW: Added apartment
         city: '',
         suburb: '',
+        province: '',  // NEW: Added province
         postal_code: '',
     });
     const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
@@ -34,8 +36,6 @@ export default function CheckoutPage() {
         setLoading(false);
     }, [router]);
 
-
-    // --- ADD THIS NEW BLOCK HERE ---
     // Auto-fill form data if the user returns from a failed PayFast payment
     useEffect(() => {
         const savedFormData = localStorage.getItem('ecoestras_checkout');
@@ -48,7 +48,6 @@ export default function CheckoutPage() {
             }
         }
     }, []);
-    // -------------------------------
 
     const cartItems = order?.cart_bucket || [];
     const totalItems = cartItems.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
@@ -58,14 +57,14 @@ export default function CheckoutPage() {
         e.preventDefault();
 
         // Basic Validation
-        // 1. Check for empty fields
-        if (!formData.name || !formData.email || !formData.phone || !formData.address || !formData.suburb) {
+        // 1. Check for empty fields (Added city, province, and postal_code to required fields)
+        if (!formData.name || !formData.email || !formData.phone || !formData.address || !formData.city || !formData.suburb || !formData.province || !formData.postal_code) {
             setValidationError('Please fill in all required shipping fields');
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
 
-        // 2. NEW: Robust Email Validation
+        // 2. Robust Email Validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.email)) {
             setValidationError('Please enter a valid email address (e.g. name@example.com)');
@@ -83,14 +82,8 @@ export default function CheckoutPage() {
         setValidationError(null);
         setIsSubmitting(true);
 
-        setValidationError(null);
-        setIsSubmitting(true);
-
-
-        // --- ADD THIS EXACT LINE HERE ---
         // Save the completed form data before sending to backend/PayFast
         localStorage.setItem('ecoestras_checkout', JSON.stringify(formData));
-        // --------------------------------
 
         const totalAmount = order?.cart_bucket?.reduce((sum: number, item: any) => {
             return sum + (item.pricing?.customer_totalprice || 0);
@@ -103,7 +96,6 @@ export default function CheckoutPage() {
         };
 
         try {
-
             // If you have an API_URL variable in your environment, use it like this:
             const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -131,12 +123,9 @@ export default function CheckoutPage() {
                     });
 
                     document.body.appendChild(form);
-                    // REMOVED: localStorage.removeItem('pending_order');
                     form.submit();
                 } else {
-
                     // Fallback to manual success if no PayFast data (shouldn't happen)
-                    // REMOVED: localStorage.removeItem('pending_order');
                     setIsSuccess(true);
                 }
             } else {
@@ -247,7 +236,20 @@ export default function CheckoutPage() {
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {/* NEW: Apartment / Suite Field */}
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-4">Apartment, suite, etc. (optional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Apartment 4B, Complex Name"
+                                        className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
+                                        value={formData.apartment}
+                                        onChange={(e) => setFormData({ ...formData, apartment: e.target.value })}
+                                    />
+                                </div>
+
+                                {/* NEW LAYOUT: City & Suburb on one line */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-4">City</label>
                                         <input
@@ -268,6 +270,35 @@ export default function CheckoutPage() {
                                             onChange={(e) => setFormData({ ...formData, suburb: e.target.value })}
                                         />
                                     </div>
+                                </div>
+
+                                {/* NEW LAYOUT: Province Dropdown & Postal Code */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-4">Province</label>
+                                        <div className="relative">
+                                            <select
+                                                className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900 appearance-none"
+                                                value={formData.province}
+                                                onChange={(e) => setFormData({ ...formData, province: e.target.value })}
+                                            >
+                                                <option value="" disabled>Select Province</option>
+                                                <option value="Eastern Cape">Eastern Cape</option>
+                                                <option value="Free State">Free State</option>
+                                                <option value="Gauteng">Gauteng</option>
+                                                <option value="KwaZulu-Natal">KwaZulu-Natal</option>
+                                                <option value="Limpopo">Limpopo</option>
+                                                <option value="Mpumalanga">Mpumalanga</option>
+                                                <option value="Northern Cape">Northern Cape</option>
+                                                <option value="North West">North West</option>
+                                                <option value="Western Cape">Western Cape</option>
+                                            </select>
+                                            {/* Custom dropdown arrow to match the modern UI */}
+                                            <div className="absolute inset-y-0 right-6 flex items-center pointer-events-none text-gray-400">
+                                                <ChevronDown size={20} />
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div className="space-y-2">
                                         <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-4">Postal Code</label>
                                         <input
@@ -282,9 +313,7 @@ export default function CheckoutPage() {
                             </form>
                         </section>
 
-                        {/* 1. OUTER SECTION: Changed p-5 to p-4 on mobile to maximize the card's width on the screen */}
                         <section className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-soft border border-gray-100 p-4 md:p-12">
-
                             <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
                                 <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600">
                                     <CreditCard className="w-5 h-5 md:w-6 md:h-6" />
@@ -292,13 +321,8 @@ export default function CheckoutPage() {
                                 <h2 className="text-xl md:text-2xl font-black text-gray-900 font-heading tracking-tight">Payment Method</h2>
                             </div>
 
-                            {/* 2. INNER BOX: Changed items-center to items-start on mobile so the radio button stays near the top */}
                             <div className="p-4 md:p-6 rounded-2xl md:rounded-3xl border-2 border-black bg-gray-50 flex items-start md:items-center justify-between gap-4">
-
-                                {/* 3. YOUR FIX: flex-col on mobile, md:flex-row on desktop! */}
                                 <div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4 flex-1">
-
-                                    {/* LOGO BOX: Made it a bit bigger (90px) now that it has its own dedicated space */}
                                     <div className="bg-white p-1 rounded-xl shadow-sm flex items-center justify-center w-[90px] md:w-[120px] h-[40px] md:h-[48px] flex-shrink-0">
                                         <svg className="w-full h-auto" viewBox="0 0 110 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="PayFast">
                                             <text x="0" y="22" fill="#005CB9" style={{ font: 'bold 18px sans-serif', letterSpacing: '-0.5px' }}>payfast</text>
@@ -307,23 +331,19 @@ export default function CheckoutPage() {
                                         </svg>
                                     </div>
 
-                                    {/* TEXT: Now has 100% of the width below the logo! We can bump the font size back up a bit. */}
                                     <div className="flex-1">
                                         <p className="font-black text-gray-900 text-[14px] md:text-base leading-tight md:leading-normal">Secure Online Payment</p>
                                         <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider md:tracking-widest mt-1">Instant EFT, Card, Masterpass</p>
                                     </div>
                                 </div>
 
-                                {/* RADIO BUTTON (PERMANENTLY SELECTED): Stays locked to the top right on mobile, centers on desktop */}
                                 <div className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 rounded-full border-[3px] md:border-4 border-black bg-white shadow-inner mt-2 md:mt-0 flex items-center justify-center">
-                                    {/* The solid black dot inside */}
                                     <div className="w-2.5 h-2.5 md:w-3 md:h-3 bg-black rounded-full"></div>
                                 </div>
                             </div>
 
                             <p className="mt-6 md:mt-8 text-[12px] md:text-sm text-gray-500 font-medium leading-relaxed">
                                 After clicking “Complete Order”, you will be redirected to PayFast to complete your purchase securely.
-                                {/* Added 'block md:inline' to drop this onto its own line on mobile for better readability */}
                                 <span className="text-black font-black block mt-2 md:inline md:mt-0"> Free shipping applied to all South African orders.</span>
                             </p>
                         </section>

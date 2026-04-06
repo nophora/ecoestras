@@ -54,8 +54,10 @@ type Order = {
         email: string;
         phone: string;
         address: string;
+        apartment: string; // NEW: Added apartment
         city: string;
         suburb: string;
+        province: string;  // NEW: Added province
         postal_code: string;
     };
     cart_bucket: {
@@ -816,8 +818,10 @@ Full Name: ${order.customer.name}
 Email: ${order.customer.email}
 Phone: ${order.customer.phone}
 Address: ${order.customer.address}
+apartment:${order.customer.apartment}
 City: ${order.customer.city}
 Suburb: ${order.customer.suburb}
+province:${order.customer.province}
 Postal Code: ${order.customer.postal_code}
 
 Total Amount: R${order.total_amount}
@@ -1524,8 +1528,16 @@ Total Amount: R${order.total_amount}
                                                     </div>
                                                     <div className="bg-gray-50 p-4 rounded-2xl space-y-3">
                                                         <div>
+                                                            <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">province</p>
+                                                            <p className="text-[10px] font-bold text-gray-600 leading-tight">{order.customer.province}</p>
+                                                        </div>
+                                                        <div>
                                                             <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Street Address</p>
                                                             <p className="text-[10px] font-bold text-gray-600 leading-tight">{order.customer.address}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">apartment</p>
+                                                            <p className="text-[10px] font-bold text-gray-600 leading-tight">{order.customer.apartment}</p>
                                                         </div>
                                                         <div className="grid grid-cols-2 gap-4">
                                                             <div>

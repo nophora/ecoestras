@@ -13,18 +13,28 @@ export default function CheckoutPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
+
+    // NEW: State to control our custom premium dropdown
+    const [isProvinceOpen, setIsProvinceOpen] = useState(false);
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         phone: '',
         address: '',
-        apartment: '', // NEW: Added apartment
+        apartment: '',
         city: '',
         suburb: '',
-        province: '',  // NEW: Added province
+        province: '',
         postal_code: '',
     });
     const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
+
+    // List of SA Provinces
+    const provincesList = [
+        "Eastern Cape", "Free State", "Gauteng", "KwaZulu-Natal",
+        "Limpopo", "Mpumalanga", "Northern Cape", "North West", "Western Cape"
+    ];
 
     useEffect(() => {
         const pending = localStorage.getItem('pending_order');
@@ -41,7 +51,6 @@ export default function CheckoutPage() {
         const savedFormData = localStorage.getItem('ecoestras_checkout');
         if (savedFormData) {
             try {
-                // Parse the JSON string back into an object and set it into state
                 setFormData(JSON.parse(savedFormData));
             } catch (e) {
                 console.error("Could not load saved checkout data", e);
@@ -57,14 +66,13 @@ export default function CheckoutPage() {
         e.preventDefault();
 
         // Basic Validation
-        // 1. Check for empty fields (Added city, province, and postal_code to required fields)
         if (!formData.name || !formData.email || !formData.phone || !formData.address || !formData.city || !formData.suburb || !formData.province || !formData.postal_code) {
             setValidationError('Please fill in all required shipping fields');
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
 
-        // 2. Robust Email Validation
+        // Robust Email Validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.email)) {
             setValidationError('Please enter a valid email address (e.g. name@example.com)');
@@ -72,7 +80,7 @@ export default function CheckoutPage() {
             return;
         }
 
-        // 3. Optional: Phone Validation (Ensures it's at least 10 digits)
+        // Phone Validation (Ensures it's at least 10 digits)
         if (formData.phone.replace(/\s/g, '').length < 10) {
             setValidationError('Please enter a valid 10-digit phone number');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -96,7 +104,6 @@ export default function CheckoutPage() {
         };
 
         try {
-            // If you have an API_URL variable in your environment, use it like this:
             const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
             const res = await fetch(`${API_URL}/orders`, {
@@ -108,7 +115,6 @@ export default function CheckoutPage() {
             if (res.ok) {
                 const data = await res.json();
 
-                // If backend returned PayFast data, redirect via form submission
                 if (data.payfast) {
                     const form = document.createElement('form');
                     form.method = 'POST';
@@ -125,7 +131,6 @@ export default function CheckoutPage() {
                     document.body.appendChild(form);
                     form.submit();
                 } else {
-                    // Fallback to manual success if no PayFast data (shouldn't happen)
                     setIsSuccess(true);
                 }
             } else {
@@ -236,7 +241,6 @@ export default function CheckoutPage() {
                                     />
                                 </div>
 
-                                {/* NEW: Apartment / Suite Field */}
                                 <div className="space-y-2">
                                     <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-4">Apartment, suite, etc. (optional)</label>
                                     <input
@@ -248,7 +252,6 @@ export default function CheckoutPage() {
                                     />
                                 </div>
 
-                                {/* NEW LAYOUT: City & Suburb on one line */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-4">City</label>
@@ -272,33 +275,55 @@ export default function CheckoutPage() {
                                     </div>
                                 </div>
 
-                                {/* NEW LAYOUT: Province Dropdown & Postal Code */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
+
+                                    {/* --- NEW PREMIUM CUSTOM DROPDOWN --- */}
+                                    <div className="space-y-2 relative">
                                         <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-4">Province</label>
                                         <div className="relative">
-                                            <select
-                                                className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900 appearance-none"
-                                                value={formData.province}
-                                                onChange={(e) => setFormData({ ...formData, province: e.target.value })}
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsProvinceOpen(!isProvinceOpen)}
+                                                className={`w-full px-8 py-4 rounded-full border-2 flex justify-between items-center transition-all font-bold focus:outline-none ${isProvinceOpen
+                                                        ? 'bg-white border-black text-gray-900'
+                                                        : 'bg-gray-50 border-gray-50 text-gray-900 hover:bg-white hover:border-gray-200'
+                                                    }`}
                                             >
-                                                <option value="" disabled>Select Province</option>
-                                                <option value="Eastern Cape">Eastern Cape</option>
-                                                <option value="Free State">Free State</option>
-                                                <option value="Gauteng">Gauteng</option>
-                                                <option value="KwaZulu-Natal">KwaZulu-Natal</option>
-                                                <option value="Limpopo">Limpopo</option>
-                                                <option value="Mpumalanga">Mpumalanga</option>
-                                                <option value="Northern Cape">Northern Cape</option>
-                                                <option value="North West">North West</option>
-                                                <option value="Western Cape">Western Cape</option>
-                                            </select>
-                                            {/* Custom dropdown arrow to match the modern UI */}
-                                            <div className="absolute inset-y-0 right-6 flex items-center pointer-events-none text-gray-400">
-                                                <ChevronDown size={20} />
-                                            </div>
+                                                <span className={formData.province ? 'text-gray-900' : 'text-gray-400 font-normal'}>
+                                                    {formData.province || 'Select Province'}
+                                                </span>
+                                                <ChevronDown
+                                                    size={20}
+                                                    className={`transition-transform duration-300 ${isProvinceOpen ? 'rotate-180 text-black' : 'text-gray-400'}`}
+                                                />
+                                            </button>
+
+                                            {/* Dropdown Menu */}
+                                            {isProvinceOpen && (
+                                                <div className="absolute top-[110%] left-0 w-full bg-white border border-gray-100 rounded-3xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                                    <div className="max-h-60 overflow-y-auto py-2">
+                                                        {provincesList.map((prov) => (
+                                                            <div
+                                                                key={prov}
+                                                                onClick={() => {
+                                                                    setFormData({ ...formData, province: prov });
+                                                                    setIsProvinceOpen(false);
+                                                                }}
+                                                                className={`w-full text-left px-8 py-3 text-sm font-bold cursor-pointer transition-colors ${formData.province === prov
+                                                                        ? 'bg-black text-white'
+                                                                        : 'text-gray-500 hover:bg-gray-50 hover:text-black'
+                                                                    }`}
+                                                            >
+                                                                {prov}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
+                                    {/* ---------------------------------- */}
+
                                     <div className="space-y-2">
                                         <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-4">Postal Code</label>
                                         <input

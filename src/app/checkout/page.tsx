@@ -14,7 +14,7 @@ export default function CheckoutPage() {
     const [isSuccess, setIsSuccess] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
 
-    // NEW: State to control our custom premium dropdown
+    // State to control our custom premium dropdown
     const [isProvinceOpen, setIsProvinceOpen] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -182,27 +182,30 @@ export default function CheckoutPage() {
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 py-12">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-7xl mx-auto">
+            {/* Changed px-4 py-12 to be responsive, reducing side gaps on mobile */}
+            <div className="container mx-auto px-3 sm:px-4 py-8 md:py-12">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 max-w-7xl mx-auto">
 
                     {/* Left Column: Shipping Info */}
-                    <div className="lg:col-span-7 space-y-8">
-                        <section className="bg-white rounded-[2.5rem] shadow-soft border border-gray-100 p-8 md:p-12">
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center text-white">
-                                    <Truck size={24} />
+                    <div className="lg:col-span-7 space-y-6 md:space-y-8">
+                        {/* Changed padding from p-8 to p-5 for mobile, and rounded-[2.5rem] to rounded-3xl for mobile */}
+                        <section className="bg-white rounded-3xl md:rounded-[2.5rem] shadow-soft border border-gray-100 p-5 md:p-12">
+                            <div className="flex items-center gap-4 mb-6 md:mb-8">
+                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-black flex items-center justify-center text-white">
+                                    <Truck size={20} className="md:w-6 md:h-6" />
                                 </div>
-                                <h2 className="text-2xl font-black text-gray-900 font-heading tracking-tight">Shipping Details</h2>
+                                <h2 className="text-xl md:text-2xl font-black text-gray-900 font-heading tracking-tight">Shipping Details</h2>
                             </div>
 
-                            <form className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <form className="space-y-5 md:space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
                                     <div className="space-y-2">
                                         <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-4">Full Name</label>
                                         <input
                                             type="text"
                                             placeholder="e.g. John Doe"
-                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
+                                            /* Changed px-8 py-4 to responsive px-5 py-3.5 md:px-8 md:py-4 */
+                                            className="w-full px-5 py-3.5 md:px-8 md:py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         />
@@ -212,7 +215,7 @@ export default function CheckoutPage() {
                                         <input
                                             type="email"
                                             placeholder="john@example.com"
-                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
+                                            className="w-full px-5 py-3.5 md:px-8 md:py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
                                             value={formData.email}
                                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                         />
@@ -224,7 +227,7 @@ export default function CheckoutPage() {
                                     <input
                                         type="tel"
                                         placeholder="012 345 6789"
-                                        className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
+                                        className="w-full px-5 py-3.5 md:px-8 md:py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                     />
@@ -235,7 +238,7 @@ export default function CheckoutPage() {
                                     <input
                                         type="text"
                                         placeholder="123 Luxury Lane, Sandton"
-                                        className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
+                                        className="w-full px-5 py-3.5 md:px-8 md:py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
                                         value={formData.address}
                                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                     />
@@ -246,19 +249,19 @@ export default function CheckoutPage() {
                                     <input
                                         type="text"
                                         placeholder="Apartment 4B, Complex Name"
-                                        className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
+                                        className="w-full px-5 py-3.5 md:px-8 md:py-4 rounded-full border-2 border-gray-50 bg-slate-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
                                         value={formData.apartment}
                                         onChange={(e) => setFormData({ ...formData, apartment: e.target.value })}
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
                                     <div className="space-y-2">
                                         <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-4">City</label>
                                         <input
                                             type="text"
                                             placeholder="Johannesburg"
-                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
+                                            className="w-full px-5 py-3.5 md:px-8 md:py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
                                             value={formData.city}
                                             onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                                         />
@@ -268,33 +271,33 @@ export default function CheckoutPage() {
                                         <input
                                             type="text"
                                             placeholder="Sandton"
-                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
+                                            className="w-full px-5 py-3.5 md:px-8 md:py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
                                             value={formData.suburb}
                                             onChange={(e) => setFormData({ ...formData, suburb: e.target.value })}
                                         />
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
 
-                                    {/* --- NEW PREMIUM CUSTOM DROPDOWN --- */}
+                                    {/* --- PREMIUM CUSTOM DROPDOWN --- */}
                                     <div className="space-y-2 relative">
                                         <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-4">Province</label>
                                         <div className="relative">
                                             <button
                                                 type="button"
                                                 onClick={() => setIsProvinceOpen(!isProvinceOpen)}
-                                                className={`w-full px-8 py-4 rounded-full border-2 flex justify-between items-center transition-all font-bold focus:outline-none ${isProvinceOpen
-                                                        ? 'bg-white border-black text-gray-900'
-                                                        : 'bg-gray-50 border-gray-50 text-gray-900 hover:bg-white hover:border-gray-200'
+                                                className={`w-full px-5 py-3.5 md:px-8 md:py-4 rounded-full border-2 flex justify-between items-center transition-all font-bold focus:outline-none ${isProvinceOpen
+                                                    ? 'bg-white border-black text-gray-900'
+                                                    : 'bg-gray-50 border-gray-50 text-gray-900 hover:bg-white hover:border-gray-200'
                                                     }`}
                                             >
-                                                <span className={formData.province ? 'text-gray-900' : 'text-gray-400 font-normal'}>
+                                                <span className={formData.province ? 'text-gray-900' : 'text-gray-400 font-normal truncate pr-2'}>
                                                     {formData.province || 'Select Province'}
                                                 </span>
                                                 <ChevronDown
                                                     size={20}
-                                                    className={`transition-transform duration-300 ${isProvinceOpen ? 'rotate-180 text-black' : 'text-gray-400'}`}
+                                                    className={`flex-shrink-0 transition-transform duration-300 ${isProvinceOpen ? 'rotate-180 text-black' : 'text-gray-400'}`}
                                                 />
                                             </button>
 
@@ -309,9 +312,9 @@ export default function CheckoutPage() {
                                                                     setFormData({ ...formData, province: prov });
                                                                     setIsProvinceOpen(false);
                                                                 }}
-                                                                className={`w-full text-left px-8 py-3 text-sm font-bold cursor-pointer transition-colors ${formData.province === prov
-                                                                        ? 'bg-black text-white'
-                                                                        : 'text-gray-500 hover:bg-gray-50 hover:text-black'
+                                                                className={`w-full text-left px-5 py-3 md:px-8 md:py-3 text-sm font-bold cursor-pointer transition-colors ${formData.province === prov
+                                                                    ? 'bg-black text-white'
+                                                                    : 'text-gray-500 hover:bg-gray-50 hover:text-black'
                                                                     }`}
                                                             >
                                                                 {prov}
@@ -329,7 +332,7 @@ export default function CheckoutPage() {
                                         <input
                                             type="text"
                                             placeholder="2000"
-                                            className="w-full px-8 py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
+                                            className="w-full px-5 py-3.5 md:px-8 md:py-4 rounded-full border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-black focus:outline-none transition-all font-bold text-gray-900"
                                             value={formData.postal_code}
                                             onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })}
                                         />
@@ -338,7 +341,7 @@ export default function CheckoutPage() {
                             </form>
                         </section>
 
-                        <section className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-soft border border-gray-100 p-4 md:p-12">
+                        <section className="bg-white rounded-3xl md:rounded-[2.5rem] shadow-soft border border-gray-100 p-5 md:p-12">
                             <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
                                 <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600">
                                     <CreditCard className="w-5 h-5 md:w-6 md:h-6" />
@@ -376,11 +379,11 @@ export default function CheckoutPage() {
 
                     {/* Right Column: Order Summary */}
                     <div className="lg:col-span-5">
-                        <div className="sticky top-32 space-y-8">
-                            <section className="bg-white rounded-[2.5rem] shadow-card border border-gray-100 overflow-hidden">
+                        <div className="sticky top-24 md:top-32 space-y-8">
+                            <section className="bg-white rounded-3xl md:rounded-[2.5rem] shadow-card border border-gray-100 overflow-hidden">
                                 <div
                                     onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                                    className="p-8 border-b border-gray-50 bg-slate-50/50 flex items-center justify-between cursor-pointer group"
+                                    className="p-5 md:p-8 border-b border-gray-50 bg-slate-50/50 flex items-center justify-between cursor-pointer group"
                                 >
                                     <div>
                                         <h2 className="text-xl font-black text-gray-900 font-heading tracking-tight">Order Summary</h2>
@@ -393,11 +396,11 @@ export default function CheckoutPage() {
                                     </div>
                                 </div>
 
-                                <div className="p-8 space-y-8">
+                                <div className="p-5 md:p-8 space-y-6 md:space-y-8">
                                     <div className={`space-y-6 overflow-hidden transition-all duration-500 ${isSummaryExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
                                         {cartItems.map((item: any, idx: number) => (
-                                            <div key={idx} className="flex items-center gap-6 pb-6 border-b border-gray-50 last:border-0 last:pb-0">
-                                                <div className="relative w-20 h-20 bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 flex-shrink-0">
+                                            <div key={idx} className="flex items-center gap-4 md:gap-6 pb-6 border-b border-gray-50 last:border-0 last:pb-0">
+                                                <div className="relative w-16 h-16 md:w-20 md:h-20 bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 flex-shrink-0">
                                                     <Image
                                                         src={item.product_icon}
                                                         alt={item.name}
@@ -430,12 +433,12 @@ export default function CheckoutPage() {
                                         <div className="flex items-center gap-4 py-2">
                                             <div className="flex -space-x-4 overflow-hidden">
                                                 {cartItems.slice(0, 3).map((item: any, idx: number) => (
-                                                    <div key={idx} className="inline-block h-12 w-12 rounded-xl ring-4 ring-white bg-gray-50 border border-gray-100 relative overflow-hidden">
+                                                    <div key={idx} className="inline-block h-10 w-10 md:h-12 md:w-12 rounded-xl ring-4 ring-white bg-gray-50 border border-gray-100 relative overflow-hidden flex-shrink-0">
                                                         <Image src={item.product_icon} alt={item.name} fill className="object-cover" />
                                                     </div>
                                                 ))}
                                                 {cartItems.length > 3 && (
-                                                    <div className="inline-block h-12 w-12 rounded-xl ring-4 ring-white bg-black flex items-center justify-center text-[10px] font-black text-white">
+                                                    <div className="inline-block h-10 w-10 md:h-12 md:w-12 rounded-xl ring-4 ring-white bg-black flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">
                                                         +{cartItems.length - 3}
                                                     </div>
                                                 )}
@@ -446,19 +449,19 @@ export default function CheckoutPage() {
                                         </div>
                                     )}
 
-                                    <div className="space-y-4 pt-8 border-t border-gray-50">
+                                    <div className="space-y-4 pt-6 md:pt-8 border-t border-gray-50">
                                         <div className="flex justify-between text-gray-500 font-medium text-xs uppercase tracking-widest">
                                             <span>Subtotal</span>
                                             <span className="text-gray-900 font-bold">R{subtotal.toFixed(2)}</span>
                                         </div>
-                                        <div className="flex justify-between text-gray-500 font-medium text-xs uppercase tracking-widest">
+                                        <div className="flex justify-between text-gray-500 font-medium text-[10px] md:text-xs uppercase tracking-widest">
                                             <span>Shipping (South Africa)</span>
                                             <span className="text-green-600 font-bold tracking-widest">Free</span>
                                         </div>
                                         <div className="pt-4 border-t border-gray-100 flex justify-between items-end">
                                             <div>
                                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total to pay</p>
-                                                <p className="text-4xl font-black text-gray-900">R{subtotal.toFixed(2)}</p>
+                                                <p className="text-3xl md:text-4xl font-black text-gray-900">R{subtotal.toFixed(2)}</p>
                                             </div>
                                             <div className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-1">
                                                 Zero Extas
@@ -467,31 +470,31 @@ export default function CheckoutPage() {
                                     </div>
                                 </div>
 
-                                <div className="p-8">
+                                <div className="p-5 md:p-8 pt-0 md:pt-0">
                                     {validationError && (
                                         <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 animate-in fade-in slide-in-from-top-2 duration-300">
                                             <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
                                                 <Lock size={14} />
                                             </div>
-                                            <p className="text-xs font-bold uppercase tracking-widest">{validationError}</p>
+                                            <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest">{validationError}</p>
                                         </div>
                                     )}
 
                                     <button
                                         onClick={handleSubmit}
                                         disabled={isSubmitting}
-                                        className="w-full bg-black hover:bg-gray-800 text-white font-black py-6 rounded-full shadow-2xl hover:shadow-black/30 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm disabled:opacity-50"
+                                        className="w-full bg-black hover:bg-gray-800 text-white font-black py-5 md:py-6 rounded-full shadow-2xl hover:shadow-black/30 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm disabled:opacity-50"
                                     >
                                         {isSubmitting ? 'Processing...' : 'Complete Order'}
                                         <ChevronLeft className="rotate-180" size={18} />
                                     </button>
 
-                                    <div className="mt-8 grid grid-cols-2 gap-4">
-                                        <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                    <div className="mt-6 md:mt-8 grid grid-cols-2 gap-4">
+                                        <div className="flex items-center gap-2 text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                                             <ShieldCheck size={14} className="text-black" />
                                             Secured Results
                                         </div>
-                                        <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                        <div className="flex items-center gap-2 text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                                             <ShieldCheck size={14} className="text-black" />
                                             Secured Formula
                                         </div>
@@ -504,8 +507,8 @@ export default function CheckoutPage() {
             </div>
 
             {/* Simple Footer */}
-            <footer className="py-12 border-t border-gray-100 text-center">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em]">
+            <footer className="py-8 md:py-12 border-t border-gray-100 text-center">
+                <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] md:tracking-[0.3em]">
                     &copy; 2026 EcoEstras South Africa. All Rights Reserved.
                 </p>
             </footer>
